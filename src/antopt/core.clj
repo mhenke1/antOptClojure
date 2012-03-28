@@ -12,14 +12,20 @@
 	[48, 28], [56, 37], [30, 40]
 ])
 
-(defn square "Squares the given number" [x] (* x x))
 
 (defn distance [point1 point2] 
 	(let [[x1 y1] point1 [x2 y2] point2] 
-	(Math/sqrt (+ (square (- x2 x1)) (square (- y2 y1))))))
+	(Math/sqrt (+ (Math/pow (- x2 x1) 2) (Math/pow (- y2 y1) 2)))))
 
-(defn calculateTourLength [tour] 
+(defn legDistance [leg] 
+	(let [[point1 point2] leg]
+	(distance point1 point2))) 	
+
+(defn calculateTourLength [tour cities] 
     (let 
-    	[numberOfCities (count tour) 
-    	tourSteps (partition 2  1 tour)] 
-    tourSteps))
+        [citiesInTour (map cities tour) 
+    	 legsInTour (partition 2  1 citiesInTour)
+    	 lengthOfLegs (map legDistance legsInTour)]
+    (reduce + lengthOfLegs)))
+    
+    
