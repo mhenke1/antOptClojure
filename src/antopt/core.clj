@@ -1,4 +1,5 @@
 (ns antopt.core)
+  (:require clojure.math.combinatorics)
 
 (def cities [
 	[37, 52], [49, 49], [52, 64], [20, 26], [40, 30], [21, 47],
@@ -11,6 +12,12 @@
 	[ 5, 64], [30, 15], [39, 10], [32, 39], [25, 32], [25, 55], 
 	[48, 28], [56, 37], [30, 40]
 ])
+
+
+(defn initializeData [cities] 
+	(let [numberOfCities (count cities)
+	  allLegs (cartesian-product (range 0 (count cities)) (range 0 (count cities)))]
+	  (count allLegs)))
 
 
 (defn distance [point1 point2] 
@@ -28,4 +35,4 @@
     	 lengthOfLegs (map legDistance legsInTour)]
     (reduce + lengthOfLegs)))
     
-    
+ 
