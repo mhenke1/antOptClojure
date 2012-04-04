@@ -13,26 +13,24 @@
 	[48, 28], [56, 37], [30, 40]
 ])
 
-
-(defn initializeData [cities] 
-	(let [numberOfCities (count cities)
-	  allLegs (cartesian-product (range 0 (count cities)) (range 0 (count cities)))]
-	  (count allLegs)))
-
+(defn initialize-data [cities] 
+	(let [number-of-cities (count cities)
+	  all-legs (cartesian-product (range (count cities)) (range (count cities)))]
+	  (count all-legs)))
 
 (defn distance [point1 point2] 
 	(let [[x1 y1] point1 [x2 y2] point2] 
 	(Math/sqrt (+ (Math/pow (- x2 x1) 2) (Math/pow (- y2 y1) 2)))))
 
-(defn legDistance [leg] 
+(defn leg-distance [leg] 
 	(let [[point1 point2] leg]
 	(distance point1 point2))) 	
 
-(defn calculateTourLength [tour cities] 
+(defn calculate-tour-length [tour cities] 
     (let 
-        [citiesInTour (map cities tour) 
-    	 legsInTour (partition 2  1 citiesInTour)
-    	 lengthOfLegs (map legDistance legsInTour)]
-    (reduce + lengthOfLegs)))
+        [cities-in-tour (map cities tour) 
+    	 legs-in-tour (partition 2  1 cities-in-tour)
+    	 length-of-legs (map leg-distance legs-in-tour)]
+    (reduce + length-of-legs)))
     
  
