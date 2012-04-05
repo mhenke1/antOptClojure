@@ -13,10 +13,13 @@
 	[48, 28], [56, 37], [30, 40]
 ])
 
+(def alpha 0.5)
+(def beta 2)
+
 (defn initialize-data [cities] 
-	(let [number-of-cities (count cities)
-	  all-legs (cartesian-product (range (count cities)) (range (count cities)))]
-	  (count all-legs)))
+	(let [leg-data {} 
+		  all-legs (cartesian-product (range (count cities)) (range (count cities)))]
+		 (reduce merge (map (fn [leg] (assoc leg-data leg 1)) all-legs))))
 
 (defn distance [point1 point2] 
 	(let [[x1 y1] point1 [x2 y2] point2] 
@@ -32,5 +35,15 @@
     	 legs-in-tour (partition 2  1 cities-in-tour)
     	 length-of-legs (map leg-distance legs-in-tour)]
     (reduce + length-of-legs)))
+	
+(defn generate-ant-tour[cities] 
+	(let [leg-data (initialize-data cities)]
+	(leg-data)
+)
+
+(defn ant-tour []
+	(let [ant-tour (generate-ant-tour cities)]
+	(ant-tour)))
+	
     
  
