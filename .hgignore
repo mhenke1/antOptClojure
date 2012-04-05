@@ -1,0 +1,4 @@
+syntax: glob
+lib/math.combinatorics-0.0.2.jar
+lib/clojure-1.3.0.jar
+.lein-deps-sum
