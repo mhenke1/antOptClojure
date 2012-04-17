@@ -33,7 +33,16 @@
     	 legs-in-tour (partition 2  1 cities-in-tour)
     	 length-of-legs (map leg-distance legs-in-tour)]
     (reduce + length-of-legs)))	
-
+    
+(defn create-leg-info [leg cities]
+	(let [[city1 city2] leg
+		  leg-dist (distance (cities city1) (cities city2))
+		  weighted-distance (Math/pow leg-dist beta) 
+		  tau (* (rand) 0.1)
+		  weighted-tau (Math/pow tau alpha)
+		  probability (/ weighted-tau weighted-distance)]
+		  (list leg-dist weighted-distance tau weighted-tau probability)))
+    
 (defn initialize-leg-data [cities] 
 	(let [all-legs (cartesian-product (range (count cities)) (range (count cities)))]
 		 (reduce merge (map (fn [leg] {leg (create-leg-info leg cities)}) all-legs))))
@@ -42,12 +51,19 @@
 	(let [leg-id leg-info] leg
 		[leg-dist weighted-distance tau weighted-tau] leg-info
 		new-tau (* tau (- 1 rho))
-		new-weighted-tau (Math/pow new-tau alpha)]
-	{leg-id (list leg-dist weighted-distance new-tau new-weighted-tau)}))
-		    
+		new-weighted-tau (Math/pow new-tau alpha)
+		new-probability (/ new-weighted-tau weighted-distance)]
+	{leg-id (list leg-dist weighted-distance new-tau new-weighted-tau new-probability)}))
+
 (defn evaporate-pheromone [leg-data]
-   (reduce merge (map (fn [leg] (evaporate-leg leg)) all-legs)))
-	
+   (reduce merge (map evaporate-leg leg-data)))
+
+(defn construct-ant-tour [leg-data tour remaining-cities]
+	(let [next-city (choose-next-city leg-data (first tour) remaining-cities)
+	new-tour (list next-city tour)
+	new-remaining-cities (remove #(= % next-city) remaining-cities)]
+	(construct-ant-tour leg-data new-tour new-remaining-cities)))	 	
+		    
 (defn generate-ant-tour[cities] 
 	(let [leg-data (initialize-data cities)]
 	(leg-data)
