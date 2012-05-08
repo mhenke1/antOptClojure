@@ -1,5 +1,5 @@
-(ns antopt.core)
-  (:require clojure.math.combinatorics)
+(ns antopt.core
+  (:use [clojure.math.combinatorics  :only (cartesian-product)]))
   
 (def alpha 1)
 (def beta 2)
@@ -48,7 +48,7 @@
 		 (reduce merge (map (fn [leg] {leg (create-leg-info leg cities)}) all-legs))))
     
 (defn evaporate-leg [leg] 
-	(let [leg-id leg-info] leg
+	(let [[leg-id leg-info] leg
 		[leg-dist weighted-distance tau weighted-tau] leg-info
 		new-tau (* tau (- 1 rho))
 		new-weighted-tau (Math/pow new-tau alpha)
@@ -58,6 +58,9 @@
 (defn evaporate-pheromone [leg-data]
    (reduce merge (map evaporate-leg leg-data)))
 
+(defn choose-next-city [current-city remaining cities]
+  [])
+
 (defn construct-ant-tour [leg-data tour remaining-cities]
 	(let [next-city (choose-next-city leg-data (first tour) remaining-cities)
 	new-tour (list next-city tour)
@@ -65,8 +68,8 @@
 	(construct-ant-tour leg-data new-tour new-remaining-cities)))	 	
 		    
 (defn generate-ant-tour[cities] 
-	(let [leg-data (initialize-data cities)]
-	(leg-data)
+	(let [leg-data (initialize-leg-data cities)]
+	(leg-data))
 )
 
 (defn ant-tour []
