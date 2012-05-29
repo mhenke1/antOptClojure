@@ -58,23 +58,24 @@
 (defn evaporate-pheromone [leg-data]
    (reduce merge (map evaporate-leg leg-data)))
 
-(defn choose-next-city [current-city remaining cities]
-  [])
+(defn choose-next-city [leg-data here remaining-cities]
+	())
 
-(defn construct-ant-tour [leg-data tour remaining-cities]
+(defn walk-ant-tour [leg-data tour remaining-cities]
 	(let [next-city (choose-next-city leg-data (first tour) remaining-cities)
 	new-tour (list next-city tour)
 	new-remaining-cities (remove #(= % next-city) remaining-cities)]
-	(construct-ant-tour leg-data new-tour new-remaining-cities)))	 	
+	(if (not-empty? new-remaining-cities)
+		(walk-ant-tour leg-data new-tour new-remaining-cities)
+		(tour))))
+
 		    
 (defn generate-ant-tour[cities] 
 	(let [leg-data (initialize-leg-data cities)]
-	(leg-data))
+	(walk-ant-tour leg-data [] cities))
 )
 
 (defn ant-tour []
 	(let [ant-tour (generate-ant-tour cities)]
 	(ant-tour)))
 	
-    
- 
