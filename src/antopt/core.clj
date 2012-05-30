@@ -28,8 +28,7 @@
 	(distance point1 point2))) 	
 	
 (defn tour-length [tour cities] 
-    (let 
-        [cities-in-tour (map cities tour) 
+    (let [cities-in-tour (map cities tour) 
     	 legs-in-tour (partition 2  1 cities-in-tour)
     	 length-of-legs (map leg-distance legs-in-tour)]
     (reduce + length-of-legs)))	
@@ -58,18 +57,19 @@
 (defn evaporate-pheromone [leg-data]
    (reduce merge (map evaporate-leg leg-data)))
 
-(defn choose-next-city [leg-data here remaining-cities]
-	())
+(defn choose-next-city [leg-data current-city remaining-cities]
+  (let [current-city-list (repeat (count remaining-cities) current-city)
+        connections (map list (vector current-city-list) remaining-cities)]
+  (connections)))
 
 (defn walk-ant-tour [leg-data tour remaining-cities]
 	(let [next-city (choose-next-city leg-data (first tour) remaining-cities)
 	new-tour (list next-city tour)
 	new-remaining-cities (remove #(= % next-city) remaining-cities)]
-	(if (not-empty? new-remaining-cities)
+	(if (not-empty new-remaining-cities)
 		(walk-ant-tour leg-data new-tour new-remaining-cities)
 		(tour))))
-
-		    
+   
 (defn generate-ant-tour[cities] 
 	(let [leg-data (initialize-leg-data cities)]
 	(walk-ant-tour leg-data [] cities))
