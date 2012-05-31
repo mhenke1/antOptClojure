@@ -40,27 +40,35 @@
 		  tau (* (rand) 0.1)
 		  weighted-tau (Math/pow tau alpha)
 		  probability (/ weighted-tau weighted-distance)]
-		  (list leg-dist weighted-distance tau weighted-tau probability)))
+		  {:distance leg-dist :weighted-distance weighted-distance :tau tau :weighted-tau weighted-tau :probability probability}))
     
 (defn initialize-leg-data [cities] 
 	(let [all-legs (cartesian-product (range (count cities)) (range (count cities)))]
 		 (reduce merge (map (fn [leg] {leg (create-leg-info leg cities)}) all-legs))))
     
 (defn evaporate-leg [leg] 
-	(let [[leg-id leg-info] leg
-		[leg-dist weighted-distance tau weighted-tau] leg-info
+	(let [[leg-id {leg-dist :distance weighted-distance :weighted-distance tau :tau}] leg
 		new-tau (* tau (- 1 rho))
 		new-weighted-tau (Math/pow new-tau alpha)
 		new-probability (/ new-weighted-tau weighted-distance)]
-	{leg-id (list leg-dist weighted-distance new-tau new-weighted-tau new-probability)}))
+	{leg-id {:distance leg-dist :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability}}))
 
 (defn evaporate-pheromone [leg-data]
    (reduce merge (map evaporate-leg leg-data)))
 
+(defn add-propabilites [connections] 1)
+
+(defn choose-connection [leg-data limit added-probabilities remaining-connections]
+	(let [new-added-probabilities (+ added-probabilities (:probability (leg-data (first remaining-connections))))]
+		(if (< new-added-probabilities limit) 
+			(choose-connection leg-data limit new-added-probabilities (rest remaining-connections)))
+	(first remaining-connections )))
+
 (defn choose-next-city [leg-data current-city remaining-cities]
   (let [current-city-list (repeat (count remaining-cities) current-city)
-        connections (map list (vector current-city-list) remaining-cities)]
-  (connections)))
+        connections (map list (vector current-city-list) remaining-cities)
+        limit (* (rand) (add-propabilites connections))]
+  (last (leg-data choose-connection limit 0 connections))))
 
 (defn walk-ant-tour [leg-data tour remaining-cities]
 	(let [next-city (choose-next-city leg-data (first tour) remaining-cities)
