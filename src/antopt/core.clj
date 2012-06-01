@@ -7,7 +7,7 @@
 (def number-of-ants 500)
 (def number-of-generations 50) 
   
-(def cities [
+(def cities-on-map [
 	[37, 52], [49, 49], [52, 64], [20, 26], [40, 30], [21, 47],
 	[17, 63], [31, 62], [52, 33], [51, 21], [42, 41], [31, 32],
 	[ 5, 25], [12, 42], [36, 16], [52, 41], [27, 23], [17, 33],
@@ -44,7 +44,7 @@
     
 (defn initialize-leg-data [cities] 
 	(let [all-legs (cartesian-product (range (count cities)) (range (count cities)))]
-		 (reduce merge (map (fn [leg] {leg (create-leg-info leg cities)}) all-legs))))
+		 (reduce merge (map (fn [leg] {(vec leg) (create-leg-info leg cities)}) all-legs))))
     
 (defn evaporate-leg [leg] 
 	(let [[leg-id {leg-dist :distance weighted-distance :weighted-distance tau :tau}] leg
@@ -84,6 +84,6 @@
 )
 
 (defn ant-tour []
-	(let [ant-tour (generate-ant-tour cities)]
+	(let [ant-tour (generate-ant-tour cities-on-map)]
 	(ant-tour)))
 	
