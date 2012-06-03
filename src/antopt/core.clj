@@ -19,39 +19,38 @@
 	[48, 28], [56, 37], [30, 40]
 ])
 
-(defn distance [point1 point2] 
+(defn euclidian-distance [point1 point2] 
 	(let [[x1 y1] point1 [x2 y2] point2] 
 	(Math/sqrt (+ (Math/pow (- x2 x1) 2) (Math/pow (- y2 y1) 2)))))
 	
-(defn leg-distance [leg] 
-	(let [[point1 point2] leg]
-	(distance point1 point2))) 	
+(defn leg-distance [leg cities] 
+	(let [[city1 city2] leg]
+	(euclidian-distance (cities city1) (cities city2))))
 	
 (defn tour-length [tour cities] 
-    (let [cities-in-tour (map cities tour) 
-    	 legs-in-tour (partition 2  1 cities-in-tour)
-    	 length-of-legs (map leg-distance legs-in-tour)]
+    (let [legs-in-tour (partition 2  1 tour)
+    	 length-of-legs (map #(leg-distance % cities) legs-in-tour)]
     (reduce + length-of-legs)))	
     
 (defn create-leg-info [leg cities]
 	(let [[city1 city2] leg
-		  leg-dist (distance (cities city1) (cities city2))
-		  weighted-distance (Math/pow leg-dist beta) 
+		  distance (leg-distance leg cities)
+		  weighted-distance (Math/pow distance beta) 
 		  tau (* (rand) 0.1)
 		  weighted-tau (Math/pow tau alpha)
 		  probability (/ weighted-tau weighted-distance)]
-		  {:distance leg-dist :weighted-distance weighted-distance :tau tau :weighted-tau weighted-tau :probability probability}))
+		  {:distance distance :weighted-distance weighted-distance :tau tau :weighted-tau weighted-tau :probability probability}))
     
 (defn initialize-leg-data [cities] 
-	(let [all-legs (cartesian-product (range (count cities)) (range (count cities)))]
-		 (reduce merge (map (fn [leg] {(vec leg) (create-leg-info leg cities)}) all-legs))))
+	(let [all-legs (filter (fn [[x y]] (not= x y)) (cartesian-product (range (count cities)) (range (count cities))))]
+		 (reduce merge (map (fn [leg] {leg (create-leg-info leg cities)}) all-legs))))
     
 (defn evaporate-leg [leg] 
-	(let [[leg-id {leg-dist :distance weighted-distance :weighted-distance tau :tau}] leg
+	(let [[leg-id {:keys [distance weighted-distance tau]}] leg
 		new-tau (* tau (- 1 rho))
 		new-weighted-tau (Math/pow new-tau alpha)
 		new-probability (/ new-weighted-tau weighted-distance)]
-	{leg-id {:distance leg-dist :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability}}))
+	{leg-id {:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability}}))
 
 (defn evaporate-pheromone [leg-data]
    (reduce merge (map evaporate-leg leg-data)))
