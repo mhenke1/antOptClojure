@@ -45,8 +45,8 @@
 	(let [all-legs (filter (fn [[x y]] (not= x y)) (cartesian-product (range (count cities)) (range (count cities))))]
 		 (reduce merge (map (fn [leg] {leg (create-leg-info leg cities)}) all-legs))))
     
-(defn evaporate-leg [leg] 
-	(let [[leg-id {:keys [distance weighted-distance tau]}] leg
+(defn evaporate-leg [leg-data] 
+	(let [[leg-id {:keys [distance weighted-distance tau]}] leg-data
 		new-tau (* tau (- 1 rho))
 		new-weighted-tau (Math/pow new-tau alpha)
 		new-probability (/ new-weighted-tau weighted-distance)]
