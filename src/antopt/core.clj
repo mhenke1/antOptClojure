@@ -55,27 +55,25 @@
 (defn evaporate-pheromone [leg-data]
    (reduce merge (map evaporate-leg leg-data)))
 
-(defn add-propabilites [connections] 1)
-
 (defn choose-connection [leg-data limit added-probabilities remaining-connections]
 	(let [new-added-probabilities (+ added-probabilities (:probability (leg-data (first remaining-connections))))]
-		(if (< new-added-probabilities limit) 
-			(choose-connection leg-data limit new-added-probabilities (rest remaining-connections)))
-	(first remaining-connections )))
+		(if (< = new-added-probabilities limit) 
+			(first remaining-connections ))
+		(recur leg-data limit new-added-probabilities (rest remaining-connections))))
 
 (defn choose-next-city [leg-data current-city remaining-cities]
   (let [current-city-list (repeat (count remaining-cities) current-city)
         connections (map list (vector current-city-list) remaining-cities)
-        limit (* (rand) (add-propabilites connections))]
+        limit (* (rand) (reduce + (map (fn [connection] (:probability (leg-data connection))) connections)))]
   (last (leg-data choose-connection limit 0 connections))))
 
 (defn walk-ant-tour [leg-data tour remaining-cities]
 	(let [next-city (choose-next-city leg-data (first tour) remaining-cities)
 	new-tour (list next-city tour)
 	new-remaining-cities (remove #(= % next-city) remaining-cities)]
-	(if (not-empty new-remaining-cities)
-		(walk-ant-tour leg-data new-tour new-remaining-cities)
-		(tour))))
+	(if (empty? new-remaining-cities) 
+		(tour))
+	(recur leg-data new-tour new-remaining-cities)))
    
 (defn generate-ant-tour[cities] 
 	(let [leg-data (initialize-leg-data cities)]
