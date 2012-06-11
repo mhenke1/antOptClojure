@@ -33,3 +33,13 @@
 	(is (= nil (:distance test-info4)))
 	(is (= (:distance test-info1) (:distance test-info2)))))
 
+(deftest test-evaporate-leg
+	(let [test-data (initialize-leg-data  [[0 0] [4 3]])
+		  test-leg (test-data [0 1])
+		  test-evap (evaporate-leg test-leg)]
+	(is (= (:distance test-evap) (:distance test-leg)))
+	(is (< (:tau test-evap) (:tau test-leg)))
+	(is (< (:weighted-tau test-evap) (:weighted-tau test-leg)))
+	(is (= (:weighted-distance test-evap) (:weighted-distance test-leg)))
+	(is (< (:probability test-evap) (:probability test-leg)))))
+

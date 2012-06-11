@@ -46,11 +46,11 @@
 		 (reduce merge (map (fn [leg] {leg (create-leg-info leg cities)}) all-legs))))
     
 (defn evaporate-leg [leg-data] 
-	(let [[leg-id {:keys [distance weighted-distance tau]}] leg-data
+	(let [{:keys [distance weighted-distance tau]} leg-data
 		new-tau (* tau (- 1 rho))
 		new-weighted-tau (Math/pow new-tau alpha)
 		new-probability (/ new-weighted-tau weighted-distance)]
-	{leg-id {:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability}}))
+	{:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability}))
 
 (defn evaporate-pheromone [leg-data]
    (reduce merge (map evaporate-leg leg-data)))
