@@ -53,7 +53,7 @@
 	{leg-id {:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability}}))
 
 (defn evaporate-pheromone [leg-data]
-   (vec (map (fn [leg] (evaporate-leg (first (first leg)) (last (first leg)))) leg-data)))
+   (reduce merge (map (fn [leg] (evaporate-leg (first leg) (last leg))) leg-data)))
 
 (defn choose-connection [leg-data limit added-probabilities remaining-connections]
 	(let [new-added-probabilities (+ added-probabilities (:probability (leg-data (first remaining-connections))))]

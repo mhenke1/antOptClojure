@@ -44,6 +44,20 @@
 	(is (= (:weighted-distance test-evap) (:weighted-distance test-leg)))
 	(is (< (:probability test-evap) (:probability test-leg)))))
 
-;;	(let [test-data (initialize-leg-data  [[0 0] [4 3]])
-;;		test-evap-data (evaporate-pheromone test-data)]
-;;	(is (not= (test-evap-data test-data)))))
+(deftest test-evaporate-pheromone
+	(let [test-data (initialize-leg-data  [[0 0] [4 3]])
+		test-evap-data (evaporate-pheromone test-data)
+		test-leg1 (test-data [0 1])
+		test-evap1 (test-evap-data [0 1])
+		test-leg2 (test-data [1 0])
+		test-evap2 (test-evap-data [1 0])]
+	(is (= (:distance test-evap1) (:distance test-leg1)))
+	(is (< (:tau test-evap1) (:tau test-leg1)))
+	(is (< (:weighted-tau test-evap1) (:weighted-tau test-leg1)))
+	(is (= (:weighted-distance test-evap1) (:weighted-distance test-leg1)))
+	(is (< (:probability test-evap1) (:probability test-leg1)))
+	(is (= (:distance test-evap2) (:distance test-leg2)))
+	(is (< (:tau test-evap2) (:tau test-leg2)))
+	(is (< (:weighted-tau test-evap2) (:weighted-tau test-leg2)))
+	(is (= (:weighted-distance test-evap2) (:weighted-distance test-leg2)))
+	(is (< (:probability test-evap2) (:probability test-leg2)))))
