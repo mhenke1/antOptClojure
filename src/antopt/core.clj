@@ -43,17 +43,17 @@
     
 (defn initialize-leg-data [cities] 
 	(let [all-legs (filter (fn [[x y]] (not= x y)) (cartesian-product (range (count cities)) (range (count cities))))]
-		 (reduce merge (map (fn [leg] {leg (create-leg-info leg cities)}) all-legs))))
+		 (reduce merge (map (fn [leg] {(vec leg) (create-leg-info leg cities)}) all-legs))))
     
-(defn evaporate-leg [leg-data] 
-	(let [{:keys [distance weighted-distance tau]} leg-data
+(defn evaporate-leg [leg-id leg-info] 
+	(let [{:keys [distance weighted-distance tau]} leg-info
 		new-tau (* tau (- 1 rho))
 		new-weighted-tau (Math/pow new-tau alpha)
 		new-probability (/ new-weighted-tau weighted-distance)]
-	{:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability}))
+	{leg-id {:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability}}))
 
 (defn evaporate-pheromone [leg-data]
-   (reduce merge (map evaporate-leg leg-data)))
+   (vec (map (fn [leg] (evaporate-leg (first (first leg)) (last (first leg)))) leg-data)))
 
 (defn choose-connection [leg-data limit added-probabilities remaining-connections]
 	(let [new-added-probabilities (+ added-probabilities (:probability (leg-data (first remaining-connections))))]
