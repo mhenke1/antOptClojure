@@ -78,5 +78,8 @@
 	(is (= connection5 [0 1]))))
 
 (deftest test-choose-next-city
-	(let [next-city (choose-next-city test-data 0 [1 2])]
+	(let [next-city (choose-next-city test-data 0 [1 2])
+;		next-city2 (choose-next-city test-data 0 [])
+		]
 		(is (some #{next-city} [1 2]))))
+

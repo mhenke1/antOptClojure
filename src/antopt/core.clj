@@ -19,20 +19,26 @@
 	[48, 28], [56, 37], [30, 40]
 ])
 
-(defn euclidian-distance [point1 point2] 
+(defn euclidian-distance 
+	"Calculates euclidian distance between two given points"
+	[point1 point2] 
 	(let [[x1 y1] point1 [x2 y2] point2] 
 	(Math/sqrt (+ (Math/pow (- x2 x1) 2) (Math/pow (- y2 y1) 2)))))
 	
-(defn leg-distance [leg cities] 
+(defn leg-distance 
+	"Calculates euclidian distance between two cities"
+	[leg cities] 
 	(let [[city1 city2] leg]
 	(euclidian-distance (cities city1) (cities city2))))
 	
-(defn tour-length [tour cities] 
+(defn tour-length 
+	[tour cities] 
     (let [legs-in-tour (partition 2  1 tour)
     	 length-of-legs (map #(leg-distance % cities) legs-in-tour)]
     (reduce + length-of-legs)))	
     
-(defn create-leg-info [leg cities]
+(defn create-leg-info 
+	[leg cities]
 	(let [[city1 city2] leg
 		  distance (leg-distance leg cities)
 		  weighted-distance (Math/pow distance beta) 
@@ -41,50 +47,63 @@
 		  probability (/ weighted-tau weighted-distance)]
 		  {:distance distance :weighted-distance weighted-distance :tau tau :weighted-tau weighted-tau :probability probability}))
     
-(defn initialize-leg-data [cities] 
+(defn initialize-leg-data 
+	[cities] 
 	(let [all-legs (filter (fn [[x y]] (not= x y)) (cartesian-product (range (count cities)) (range (count cities))))]
-		 (reduce merge (map (fn [leg] {(vec leg) (create-leg-info leg cities)}) all-legs))))
+	(reduce merge (map (fn [leg] {(vec leg) (create-leg-info leg cities)}) all-legs))))
     
-(defn evaporate-leg [leg-id leg-info] 
+(defn evaporate-leg 
+	[leg-id leg-info] 
 	(let [{:keys [distance weighted-distance tau]} leg-info
 		new-tau (* tau (- 1 rho))
 		new-weighted-tau (Math/pow new-tau alpha)
 		new-probability (/ new-weighted-tau weighted-distance)]
 	{leg-id {:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability}}))
 
-(defn evaporate-pheromone [leg-data]
+(defn evaporate-pheromone 
+	[leg-data]
    (reduce merge (map (fn [leg] (evaporate-leg (first leg) (last leg))) leg-data)))
 
-(defn choose-connection [leg-data limit added-probabilities remaining-connections]
+(defn choose-connection 
+	[leg-data limit added-probabilities remaining-connections]
 	(let [new-added-probabilities (+ added-probabilities (:probability (leg-data (first remaining-connections))))
 		connection (first remaining-connections)
 		new-remaining-connections (rest remaining-connections)]
-		(if (or (>= new-added-probabilities limit) (empty? new-remaining-connections))
-			connection
-			(recur leg-data limit new-added-probabilities new-remaining-connections))))
+	(if (or (>= new-added-probabilities limit) (empty? new-remaining-connections))
+		connection
+		(recur leg-data limit new-added-probabilities new-remaining-connections))))
 
-(defn choose-next-city [leg-data current-city remaining-cities]
-	(let [current-city-list (vec (repeat (count remaining-cities) current-city))
-		connections (vec (map vector current-city-list remaining-cities))
+(defn generate-connections 
+	[current-city remaining-cities]
+	(let [current-city-list (vec (repeat (count remaining-cities) current-city))]
+	(vec (map vector current-city-list remaining-cities))))
+
+(defn choose-next-city 
+	[leg-data current-city remaining-cities]
+	(let [connections (generate-connections current-city remaining-cities)
 		added-probabilities (reduce + (map (fn [connection] (:probability (leg-data connection))) connections))
-		limit (* (rand) added-probabilities)
-		connection (choose-connection leg-data limit 0 connections)
-		next-city (last connection)]
-        next-city))
+		limit (* (rand) added-probabilities)]
+	(last (choose-connection leg-data limit 0 connections))))
 
-(defn walk-ant-tour [leg-data tour remaining-cities]
+(defn walk-ant-tour 
+	[leg-data tour remaining-cities]
 	(let [next-city (choose-next-city leg-data (first tour) remaining-cities)
-	new-tour (list next-city tour)
-	new-remaining-cities (remove #(= % next-city) remaining-cities)]
+		new-tour (list next-city tour)
+		new-remaining-cities (remove #(= % next-city) remaining-cities)]
 	(if (empty? new-remaining-cities) 
-		(tour)
+		tour
 		(recur leg-data new-tour new-remaining-cities))))
    
-(defn generate-ant-tour[cities] 
-	(let [leg-data (initialize-leg-data cities)]
-	(walk-ant-tour leg-data [] cities))
+(defn generate-ant-tour
+	[cities] 
+	(let [leg-data (initialize-leg-data cities)
+		cities-list (range (count cities))]
+	(walk-ant-tour leg-data cities-list))
 )
 
-(defn ant-tour []
-	(let [ant-tour (generate-ant-tour cities-on-map)]
-	(ant-tour)))
+(defn ant-tour 
+	[]
+	(let [leg-data (initialize-leg-data cities-on-map)
+		cities-list (range (count cities-on-map))
+		ant-tour (walk-ant-tour leg-data cities-list)]
+	ant-tour))
