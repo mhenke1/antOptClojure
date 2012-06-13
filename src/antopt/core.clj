@@ -56,14 +56,16 @@
    (reduce merge (map (fn [leg] (evaporate-leg (first leg) (last leg))) leg-data)))
 
 (defn choose-connection [leg-data limit added-probabilities remaining-connections]
-	(let [new-added-probabilities (+ added-probabilities (:probability (leg-data (first remaining-connections))))]
-		(if (< = new-added-probabilities limit) 
-			(first remaining-connections ))
-		(recur leg-data limit new-added-probabilities (rest remaining-connections))))
+	(let [new-added-probabilities (+ added-probabilities (:probability (leg-data (first remaining-connections))))
+		connection (first remaining-connections)
+		new-remaining-connections (rest remaining-connections)]
+		(if (or (>= new-added-probabilities limit) (empty? new-remaining-connections))
+			connection
+			(recur leg-data limit new-added-probabilities new-remaining-connections))))
 
 (defn choose-next-city [leg-data current-city remaining-cities]
-  (let [current-city-list (repeat (count remaining-cities) current-city)
-        connections (map list (vector current-city-list) remaining-cities)
+  (let [current-city-list (vec (repeat (count remaining-cities) current-city))
+        connections (vec (map vector current-city-list remaining-cities))
         limit (* (rand) (reduce + (map (fn [connection] (:probability (leg-data connection))) connections)))]
   (last (leg-data choose-connection limit 0 connections))))
 

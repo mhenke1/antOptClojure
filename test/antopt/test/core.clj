@@ -1,6 +1,11 @@
 (ns antopt.test.core
   (:use [antopt.core])
   (:use [clojure.test]))
+
+(def test-data {[2 1] {:distance 5.0, :weighted-distance 25.0, :tau 0.019983426066513734, :weighted-tau 0.019983426066513734, :probability 7.993370426605494E-4}, 
+	[1 2] {:distance 5.0, :weighted-distance 25.0, :tau 0.08945806419434195, :weighted-tau 0.08945806419434195, :probability 0.003578322567773678}, 
+	[1 0] {:distance 5.0, :weighted-distance 25.0, :tau 0.09253302650638885, :weighted-tau 0.09253302650638885, :probability 0.003701321060255554}, 
+	[0 1] {:distance 5.0, :weighted-distance 25.0, :tau 0.049126426838469066, :weighted-tau 0.049126426838469066, :probability 0.001965057073538763}})
  
 (deftest test-euclidian-distance
 	(is (= 0.0 (euclidian-distance [0 0] [0 0])))
@@ -22,8 +27,7 @@
 	(is (> 0.1 (:tau test-info))))) 
 
 (deftest test-initialize-leg-data 
-	(let [test-data (initialize-leg-data  [[0 0] [4 3]])
-		  test-info1 (test-data [0 1])
+	(let [test-info1 (test-data [0 1])
 		  test-info2 (test-data [1 0])
 		  test-info3 (test-data [0 0])
 		  test-info4 (test-data [1 1])]
@@ -34,8 +38,7 @@
 	(is (= (:distance test-info1) (:distance test-info2)))))
 
 (deftest test-evaporate-leg
-	(let [test-data (initialize-leg-data  [[0 0] [4 3]])
-		  test-leg (test-data [0 1])
+	(let [test-leg (test-data [0 1])
 		  test-evap-data (evaporate-leg [0 1] test-leg)
 		  test-evap (test-evap-data [0 1])]
 	(is (= (:distance test-evap) (:distance test-leg)))
@@ -45,8 +48,7 @@
 	(is (< (:probability test-evap) (:probability test-leg)))))
 
 (deftest test-evaporate-pheromone
-	(let [test-data (initialize-leg-data  [[0 0] [4 3]])
-		test-evap-data (evaporate-pheromone test-data)
+	(let [test-evap-data (evaporate-pheromone test-data)
 		test-leg1 (test-data [0 1])
 		test-evap1 (test-evap-data [0 1])
 		test-leg2 (test-data [1 0])
@@ -61,3 +63,15 @@
 	(is (< (:weighted-tau test-evap2) (:weighted-tau test-leg2)))
 	(is (= (:weighted-distance test-evap2) (:weighted-distance test-leg2)))
 	(is (< (:probability test-evap2) (:probability test-leg2)))))
+
+(deftest test-choose-connection
+	(let [connection1 (choose-connection test-data 0.00197 0 [[0 1] [1 2] [1 0]])
+		connection2 (choose-connection test-data 0.00194 0 [[0 1] [1 2] [1 0]])
+		connection3 (choose-connection test-data 0.1 0 [[0 1] [1 2] [1 0]])
+		connection4 (choose-connection test-data 0.0092 0 [[0 1] [1 2] [1 0]])
+		connection5 (choose-connection test-data 0 0 [[0 1] [1 2] [1 0]])]
+	(is (= connection1 [1 2]))
+	(is (= connection2 [0 1]))
+	(is (= connection3 [1 0]))
+	(is (= connection4 [1 0]))
+	(is (= connection5 [0 1]))))
