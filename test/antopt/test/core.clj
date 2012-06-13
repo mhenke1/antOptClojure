@@ -5,7 +5,8 @@
 (def test-data {[2 1] {:distance 5.0, :weighted-distance 25.0, :tau 0.019983426066513734, :weighted-tau 0.019983426066513734, :probability 7.993370426605494E-4}, 
 	[1 2] {:distance 5.0, :weighted-distance 25.0, :tau 0.08945806419434195, :weighted-tau 0.08945806419434195, :probability 0.003578322567773678}, 
 	[1 0] {:distance 5.0, :weighted-distance 25.0, :tau 0.09253302650638885, :weighted-tau 0.09253302650638885, :probability 0.003701321060255554}, 
-	[0 1] {:distance 5.0, :weighted-distance 25.0, :tau 0.049126426838469066, :weighted-tau 0.049126426838469066, :probability 0.001965057073538763}})
+	[0 1] {:distance 5.0, :weighted-distance 25.0, :tau 0.049126426838469066, :weighted-tau 0.049126426838469066, :probability 0.001965057073538763},
+	[0 2] {:distance 5.0, :weighted-distance 25.0, :tau 0.055126426838469066, :weighted-tau 0.05526426838469066, :probability 0.002365057073538763}})
  
 (deftest test-euclidian-distance
 	(is (= 0.0 (euclidian-distance [0 0] [0 0])))
@@ -75,3 +76,7 @@
 	(is (= connection3 [1 0]))
 	(is (= connection4 [1 0]))
 	(is (= connection5 [0 1]))))
+
+(deftest test-choose-next-city
+	(let [next-city (choose-next-city test-data 0 [1 2])]
+		(is (some #{next-city} [1 2]))))

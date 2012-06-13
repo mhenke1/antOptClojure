@@ -64,18 +64,21 @@
 			(recur leg-data limit new-added-probabilities new-remaining-connections))))
 
 (defn choose-next-city [leg-data current-city remaining-cities]
-  (let [current-city-list (vec (repeat (count remaining-cities) current-city))
-        connections (vec (map vector current-city-list remaining-cities))
-        limit (* (rand) (reduce + (map (fn [connection] (:probability (leg-data connection))) connections)))]
-  (last (leg-data choose-connection limit 0 connections))))
+	(let [current-city-list (vec (repeat (count remaining-cities) current-city))
+		connections (vec (map vector current-city-list remaining-cities))
+		added-probabilities (reduce + (map (fn [connection] (:probability (leg-data connection))) connections))
+		limit (* (rand) added-probabilities)
+		connection (choose-connection leg-data limit 0 connections)
+		next-city (last connection)]
+        next-city))
 
 (defn walk-ant-tour [leg-data tour remaining-cities]
 	(let [next-city (choose-next-city leg-data (first tour) remaining-cities)
 	new-tour (list next-city tour)
 	new-remaining-cities (remove #(= % next-city) remaining-cities)]
 	(if (empty? new-remaining-cities) 
-		(tour))
-	(recur leg-data new-tour new-remaining-cities)))
+		(tour)
+		(recur leg-data new-tour new-remaining-cities))))
    
 (defn generate-ant-tour[cities] 
 	(let [leg-data (initialize-leg-data cities)]
@@ -85,4 +88,3 @@
 (defn ant-tour []
 	(let [ant-tour (generate-ant-tour cities-on-map)]
 	(ant-tour)))
-	
