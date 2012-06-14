@@ -91,3 +91,9 @@
 		(is (some #{next-city1} [1 2]))
 		(is (= next-city2 []))))
 
+(deftest test-walk-ant-tour 
+	(let [ant-tour (walk-ant-tour test-data [0] [1 2])]
+		(is (some #{0} ant-tour))
+		(is (some #{1} ant-tour))
+		(is (some #{2} ant-tour))
+		(is (= 0 (first ant-tour)))))
