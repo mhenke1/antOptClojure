@@ -70,20 +70,24 @@
 		connection2 (choose-connection test-data 0.00194 0 [[0 1] [1 2] [1 0]])
 		connection3 (choose-connection test-data 0.1 0 [[0 1] [1 2] [1 0]])
 		connection4 (choose-connection test-data 0.0092 0 [[0 1] [1 2] [1 0]])
-		connection5 (choose-connection test-data 0 0 [[0 1] [1 2] [1 0]])]
+		connection5 (choose-connection test-data 0 0 [[0 1] [1 2] [1 0]])
+		connection6 (choose-connection test-data 0 0 [])]
 	(is (= connection1 [1 2]))
 	(is (= connection2 [0 1]))
 	(is (= connection3 [1 0]))
 	(is (= connection4 [1 0]))
-	(is (= connection5 [0 1]))))
+	(is (= connection5 [0 1]))
+	(is (= connection6 []))))
 
 (deftest test-generate-connections
-	(let [connections (generate-connections  0 [1 2])]
-		(is (= connections [[0 1] [0 2]]))))
+	(let [connections1 (generate-connections  0 [1 2])
+		connections2 (generate-connections  0 [])]
+		(is (= connections1 [[0 1] [0 2]]))
+		(is (= connections2 []))))
 
 (deftest test-choose-next-city
-	(let [next-city (choose-next-city test-data 0 [1 2])
-;		next-city2 (choose-next-city test-data 0 [])
-		]
-		(is (some #{next-city} [1 2]))))
+	(let [next-city1 (choose-next-city test-data 0 [1 2])
+		next-city2 (choose-next-city test-data 0 [])]
+		(is (some #{next-city1} [1 2]))
+		(is (= next-city2 []))))
 
