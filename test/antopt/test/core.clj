@@ -100,8 +100,8 @@
 
 (deftest test-ant-tour
 	(let [tour (ant-tour)]
+		(println tour (tour-length tour cities-on-map))
 		(is (some #{0} tour))
 		(is (some #{1} tour))
 		(is (some #{2} tour))
 		(is (= 0 (first tour)))))
-

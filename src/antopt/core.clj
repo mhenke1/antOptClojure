@@ -23,13 +23,13 @@
 	"Calculates euclidian distance between two given points"
 	[point1 point2] 
 	(let [[x1 y1] point1 [x2 y2] point2] 
-	(Math/sqrt (+ (Math/pow (- x2 x1) 2) (Math/pow (- y2 y1) 2)))))
+		(Math/sqrt (+ (Math/pow (- x2 x1) 2) (Math/pow (- y2 y1) 2)))))
 	
 (defn leg-distance 
 	"Calculates euclidian distance between two cities"
 	[leg cities] 
 	(let [[city1 city2] leg]
-	(euclidian-distance (cities city1) (cities city2))))
+		(euclidian-distance (cities city1) (cities city2))))
     
 (defn tour-length 
 	"Calculates the total length of a given tour"
@@ -106,6 +106,5 @@
 	[]
 	(let [leg-data (initialize-leg-data cities-on-map)
 		cities-list (range 1 (count cities-on-map))
-		ant-tour (walk-ant-tour leg-data [0] cities-list)]
-		(do (println ant-tour (tour-length ant-tour cities-on-map)) 
-			ant-tour)))
+		ant-tour (walk-ant-tour leg-data [0] cities-list)] 
+		ant-tour))
