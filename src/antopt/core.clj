@@ -30,14 +30,16 @@
 	[leg cities] 
 	(let [[city1 city2] leg]
 	(euclidian-distance (cities city1) (cities city2))))
-	
+    
 (defn tour-length 
 	"Calculates the total length of a given tour"
 	[tour cities] 
     (let [legs-in-tour (partition 2  1 tour)
-    	 length-of-legs (map #(leg-distance % cities) legs-in-tour)]
-    	(reduce + length-of-legs)))	
-    
+    	 tour-length  (reduce + (map #(leg-distance % cities) legs-in-tour))]
+    	 (if (>= (count tour) 2) 
+    	   		(+ tour-length (leg-distance [(first tour) (peek tour)] cities))
+    	    	tour-length)))	
+
 (defn create-leg-info 
 	[leg cities]
 	(let [[city1 city2] leg

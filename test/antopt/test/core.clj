@@ -18,7 +18,7 @@
 
 (deftest test-tour-length
 	(is (= 0 (tour-length [0] [0 0])))
-	(is (= 5.0 (tour-length [0 1] [[0 0] [4 3]])))
+	(is (= 10.0 (tour-length [0 1] [[0 0] [4 3]])))
 	(is (= 10.0 (tour-length [0 2 1] [[0 0] [0 0] [4 3]]))))
 
 (deftest test-create-leg-info 
