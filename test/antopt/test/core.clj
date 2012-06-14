@@ -97,3 +97,11 @@
 		(is (some #{1} ant-tour))
 		(is (some #{2} ant-tour))
 		(is (= 0 (first ant-tour)))))
+
+(deftest test-ant-tour
+	(let [tour (ant-tour)]
+		(is (some #{0} tour))
+		(is (some #{1} tour))
+		(is (some #{2} tour))
+		(is (= 0 (first tour)))))
+

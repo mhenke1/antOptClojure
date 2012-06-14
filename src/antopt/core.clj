@@ -105,4 +105,5 @@
 	(let [leg-data (initialize-leg-data cities-on-map)
 		cities-list (range 1 (count cities-on-map))
 		ant-tour (walk-ant-tour leg-data [0] cities-list)]
-		ant-tour))
+		(do (println ant-tour (tour-length ant-tour cities-on-map)) 
+			ant-tour)))
