@@ -1,5 +1,5 @@
 (ns antopt.core
-  (:use [clojure.math.combinatorics  :only (cartesian-product)]))
+  (:use [clojure.math.combinatorics :only (cartesian-product)]))
   
 (def alpha 1)
 (def beta 2)
@@ -67,6 +67,21 @@
 	[leg-data]
   	(reduce merge (map (fn [leg] (evaporate-leg (first leg) (last leg))) leg-data)))
 
+(defn adjust-pheromone-for-leg 
+	[leg-data leg-id tour-length]
+	(let [leg-info (leg-data leg-id)
+		 {:keys [distance weighted-distance tau]} leg-info
+		 new-tau (+ tau (/ 1 tour-length))
+		 new-weighted-tau (Math/pow new-tau alpha)
+		 new-probability (/ new-weighted-tau weighted-distance)]
+		 {leg-id {:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability}}))
+
+(defn adjust-pheromone-for-tour
+	[leg-data tour cities] 
+	(let [legs-in-tour (partition 2  1 tour)
+		tour-length (tour-length tour cities)]
+		(map #(adjust-pheromone-for-leg leg-data % tour-length) legs-in-tour)))
+ 
 (defn choose-connection 
 	[leg-data limit added-probabilities remaining-connections]
 	(if (empty? remaining-connections) 
