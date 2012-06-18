@@ -136,17 +136,21 @@
 		(is (some #{next-city1} [1 2]))
 		(is (= next-city2 []))))
 
-(deftest test-walk-ant-tour 
-	(let [ant-tour (walk-ant-tour test-data [0] [1 2])]
+(deftest test-ant-walk-city-by-city 
+	(let [ant-tour (ant-walk-city-by-city test-data [0] [1 2])]
 		(is (some #{0} ant-tour))
 		(is (some #{1} ant-tour))
 		(is (some #{2} ant-tour))
 		(is (= 0 (first ant-tour)))))
 
-(deftest test-ant-tour
-	(let [tour (ant-tour)]
-		(println tour (tour-length tour cities-on-map))
+(deftest test-ant-walk-tour
+	(let [[ant-tour-length tour] (ant-walk-tour cities-on-map)]
 		(is (some #{0} tour))
 		(is (some #{1} tour))
 		(is (some #{2} tour))
 		(is (= 0 (first tour)))))
+
+(deftest test-multiple-ants-tour
+	(let [shortest-ant-tour (multiple-ants-tour 10 cities-on-map)
+		  [tour tour-length] shortest-ant-tour]
+		  (println "tour" tour ":" tour-length)))

@@ -115,7 +115,7 @@
 			[]
 			(last choosen-connection))))
 
-(defn walk-ant-tour
+(defn ant-walk-city-by-city
 	[leg-data tour remaining-cities]
 	(if (or (empty? tour) (empty? remaining-cities))
 		tour
@@ -124,9 +124,16 @@
 			new-remaining-cities (remove #(= % next-city) remaining-cities)]
 			(recur leg-data new-tour new-remaining-cities))))
 
-(defn ant-tour 
-	[]
-	(let [leg-data (initialize-leg-data cities-on-map)
-		cities-list (range 1 (count cities-on-map))
-		ant-tour (walk-ant-tour leg-data [0] cities-list)] 
-		ant-tour))
+(defn ant-walk-tour 
+	[cities]
+	(let [leg-data (initialize-leg-data cities)
+		cities-list (range 1 (count cities))
+		ant-tour (ant-walk-city-by-city leg-data [0] cities-list)
+		ant-tour-length (tour-length ant-tour cities)] 
+		[ant-tour-length ant-tour]))
+  
+(defn multiple-ants-tour
+	[ant-number cities]
+	(let [tour-list (map (fn [ant] (ant-walk-tour cities)) (range ant-number))
+		min-tour (apply min-key first tour-list)]
+		min-tour))
