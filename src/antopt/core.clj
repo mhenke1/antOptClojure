@@ -74,14 +74,21 @@
 		 new-tau (+ tau (/ 1 tour-length))
 		 new-weighted-tau (Math/pow new-tau alpha)
 		 new-probability (/ new-weighted-tau weighted-distance)]
-		 {leg-id {:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability}}))
+		 (assoc leg-data leg-id {:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability})))
 
-(defn adjust-pheromone-for-tour
-	[leg-data tour cities] 
-	(let [legs-in-tour (partition 2  1 tour)
-		tour-length (tour-length tour cities)]
-		(map #(adjust-pheromone-for-leg leg-data % tour-length) legs-in-tour)))
+(defn adjust-pheromone-for-tour-legs
+	[leg-data legs-in-tour tour-length] 
+	(if (empty? legs-in-tour)
+		leg-data
+		(let [new-leg-data (adjust-pheromone-for-leg leg-data (first legs-in-tour) tour-length)]
+			(recur new-leg-data (rest legs-in-tour) tour-length))))
  
+(defn adjust-pheromone-for-tour
+	[leg-data tour cities]
+	(let [legs-in-tour (vec (map vec (partition 2  1 tour)))
+		tour-length (tour-length tour cities)]
+		(adjust-pheromone-for-tour-legs leg-data legs-in-tour tour-length)))
+
 (defn choose-connection 
 	[leg-data limit added-probabilities remaining-connections]
 	(if (empty? remaining-connections) 
