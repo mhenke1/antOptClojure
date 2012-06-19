@@ -65,16 +65,6 @@
 		(is (= (:weighted-distance test-evap2) (:weighted-distance test-leg2)))
 		(is (< (:probability test-evap2) (:probability test-leg2)))))
 
-(deftest test-adjust-pheromone-for-leg
-	(let [test-leg1 (test-data [0 1])
-		evap-data (adjust-pheromone-for-leg test-data [0 1] 2)
-		test-evap1 (evap-data [0 1])]
-		(is (= (:distance test-evap1) (:distance test-leg1)))
-		(is (> (:tau test-evap1) (:tau test-leg1)))
-		(is (> (:weighted-tau test-evap1) (:weighted-tau test-leg1)))
-		(is (= (:weighted-distance test-evap1) (:weighted-distance test-leg1)))
-		(is (> (:probability test-evap1) (:probability test-leg1)))))
-
 (deftest test-adjust-pheromone-for-tour-legs
 	(let [evap-data (adjust-pheromone-for-tour-legs test-data [[0 1] [1 2]] 10)
 		test-leg1 (test-data [0 1])
@@ -124,12 +114,6 @@
 		(is (= connection5 [0 1]))
 		(is (= connection6 []))))
 
-(deftest test-generate-connections
-	(let [connections1 (generate-connections  0 [1 2])
-		connections2 (generate-connections  0 [])]
-		(is (= connections1 [[0 1] [0 2]]))
-		(is (= connections2 []))))
-
 (deftest test-choose-next-city
 	(let [next-city1 (choose-next-city test-data 0 [1 2])
 		next-city2 (choose-next-city test-data 0 [])]
@@ -144,13 +128,14 @@
 		(is (= 0 (first ant-tour)))))
 
 (deftest test-ant-walk-tour
-	(let [[ant-tour-length tour] (ant-walk-tour cities-on-map)]
+	(let [[ant-tour-length tour] (ant-walk-tour (initialize-leg-data cities-on-map) cities-on-map)]
+		(println ant-tour-length ":" tour)
 		(is (some #{0} tour))
 		(is (some #{1} tour))
 		(is (some #{2} tour))
 		(is (= 0 (first tour)))))
 
-(deftest test-multiple-ants-tour
-	(let [shortest-ant-tour (multiple-ants-tour 10 cities-on-map)
-		  [tour tour-length] shortest-ant-tour]
-		  (println "tour" tour ":" tour-length)))
+; (deftest test-multiple-ants-tour
+; 	(let [shortest-ant-tour (multiple-ants-tour 10 cities-on-map)
+; 		  [tour tour-length] shortest-ant-tour]
+; 		  (println "tour" tour ":" tour-length)))

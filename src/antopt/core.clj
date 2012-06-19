@@ -67,20 +67,17 @@
 	[leg-data]
   	(reduce merge (map (fn [leg] (evaporate-leg (first leg) (last leg))) leg-data)))
 
-(defn adjust-pheromone-for-leg 
-	[leg-data leg-id tour-length]
-	(let [leg-info (leg-data leg-id)
-		 {:keys [distance weighted-distance tau]} leg-info
-		 new-tau (+ tau (/ 1 tour-length))
-		 new-weighted-tau (Math/pow new-tau alpha)
-		 new-probability (/ new-weighted-tau weighted-distance)]
-		 (assoc leg-data leg-id {:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability})))
-
 (defn adjust-pheromone-for-tour-legs
 	[leg-data legs-in-tour tour-length] 
 	(if (empty? legs-in-tour)
 		leg-data
-		(let [new-leg-data (adjust-pheromone-for-leg leg-data (first legs-in-tour) tour-length)]
+		(let [leg-id (first legs-in-tour)
+			leg-info (leg-data leg-id)
+		 	{:keys [distance weighted-distance tau]} leg-info
+			new-tau (+ tau (/ 1 tour-length))
+			new-weighted-tau (Math/pow new-tau alpha)
+			new-probability (/ new-weighted-tau weighted-distance)
+			new-leg-data (assoc leg-data leg-id {:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability})]
 			(recur new-leg-data (rest legs-in-tour) tour-length))))
  
 (defn adjust-pheromone-for-tour
@@ -100,14 +97,10 @@
 				connection
 				(recur leg-data limit new-added-probabilities new-remaining-connections)))))
 
-(defn generate-connections 
- 	[current-city remaining-cities]
--	(let [current-city-list (vec (repeat (count remaining-cities) current-city))]
--		(vec (map vector current-city-list remaining-cities))))
-
 (defn choose-next-city 
 	[leg-data current-city remaining-cities]
-	(let [connections (generate-connections current-city remaining-cities)
+	(let [current-city-list (vec (repeat (count remaining-cities) current-city))
+		connections (vec (map vector current-city-list remaining-cities))
 		added-probabilities (reduce + (map (fn [connection] (:probability (leg-data connection))) connections))
 		limit (* (rand) added-probabilities)
 		choosen-connection (choose-connection leg-data limit 0 connections)]
@@ -125,15 +118,16 @@
 			(recur leg-data new-tour new-remaining-cities))))
 
 (defn ant-walk-tour 
-	[cities]
-	(let [leg-data (initialize-leg-data cities)
-		cities-list (range 1 (count cities))
+	[leg-data cities]
+	(let [cities-list (range 1 (count cities))
 		ant-tour (ant-walk-city-by-city leg-data [0] cities-list)
 		ant-tour-length (tour-length ant-tour cities)] 
 		[ant-tour-length ant-tour]))
   
-(defn multiple-ants-tour
-	[ant-number cities]
-	(let [tour-list (map (fn [ant] (ant-walk-tour cities)) (range ant-number))
-		min-tour (apply min-key first tour-list)]
-		min-tour))
+; (def multi-generation-ant-tour
+; 	[generations ant-number cities]
+; 	(let [leg-data (initialize-leg-data cities)]
+; 		(repeat generations
+; 			(let [tour-list (map (fn [ant] (ant-walk-tour leg-data cities)) (range ant-number))
+; 				leg-data adjust-pheromone-for-tour
+; 				min-tour (apply min-key first tour-list)]))))
