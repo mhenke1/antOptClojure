@@ -67,62 +67,46 @@
 	[leg-data]
   	(reduce merge (map (fn [leg] (evaporate-leg (first leg) (last leg))) leg-data)))
 
-(defn adjust-pheromone-for-tour-legs
-	[leg-data legs-in-tour tour-length] 
-	(if (empty? legs-in-tour)
-		leg-data
-		(let [leg-id (first legs-in-tour)
-			leg-info (leg-data leg-id)
-		 	{:keys [distance weighted-distance tau]} leg-info
-			new-tau (+ tau (/ 1 tour-length))
-			new-weighted-tau (Math/pow new-tau alpha)
-			new-probability (/ new-weighted-tau weighted-distance)
-			new-leg-data (assoc leg-data leg-id {:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability})]
-			(recur new-leg-data (rest legs-in-tour) tour-length))))
- 
+
 (defn adjust-pheromone-for-tour
 	[leg-data tour cities]
 	(let [legs-in-tour (vec (map vec (partition 2  1 tour)))
 		tour-length (tour-length tour cities)]
-		(adjust-pheromone-for-tour-legs leg-data legs-in-tour tour-length)))
-
-(defn choose-connection 
-	[leg-data limit added-probabilities remaining-connections]
-	(if (empty? remaining-connections) 
-		[]
-		(let [new-added-probabilities (+ added-probabilities (:probability (leg-data (first remaining-connections))))
-			connection (first remaining-connections)
-			new-remaining-connections (rest remaining-connections)]
-			(if (or (>= new-added-probabilities limit) (empty? new-remaining-connections))
-				connection
-				(recur leg-data limit new-added-probabilities new-remaining-connections)))))
+		(loop [leg-data leg-data legs-in-tour legs-in-tour]
+			(if (empty? legs-in-tour)
+				leg-data
+				(let [leg-id (first legs-in-tour)
+					leg-info (leg-data leg-id)
+				 	{:keys [distance weighted-distance tau]} leg-info
+					new-tau (+ tau (/ 1 tour-length))
+					new-weighted-tau (Math/pow new-tau alpha)
+					new-probability (/ new-weighted-tau weighted-distance)
+					new-leg-data (assoc leg-data leg-id {:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability})]
+					(recur new-leg-data (rest legs-in-tour)))))))
 
 (defn choose-next-city 
 	[leg-data current-city remaining-cities]
 	(let [current-city-list (vec (repeat (count remaining-cities) current-city))
 		connections (vec (map vector current-city-list remaining-cities))
 		added-probabilities (reduce + (map (fn [connection] (:probability (leg-data connection))) connections))
-		limit (* (rand) added-probabilities)
-		choosen-connection (choose-connection leg-data limit 0 connections)]
-		(if (empty? choosen-connection) 
-			[]
-			(last choosen-connection))))
+		limit (* (rand) added-probabilities)]
+		(loop [probabilities 0 next-city current-city remaining-connections connections]
+			(if (and (< probabilities limit) (not (empty? remaining-connections)))				
+				(let [new-probabilities (+ probabilities (:probability (leg-data (first remaining-connections))))]
+					(recur new-probabilities (last (first remaining-connections)) (rest remaining-connections)))
+				next-city))))
 
-(defn ant-walk-city-by-city
-	[leg-data tour remaining-cities]
-	(if (or (empty? tour) (empty? remaining-cities))
-		tour
-		(let [next-city (choose-next-city leg-data (peek tour) remaining-cities)
-			new-tour (conj tour next-city)
-			new-remaining-cities (remove #(= % next-city) remaining-cities)]
-			(recur leg-data new-tour new-remaining-cities))))
-
-(defn ant-walk-tour 
+(defn ant-walk-tour
 	[leg-data cities]
-	(let [cities-list (range 1 (count cities))
-		ant-tour (ant-walk-city-by-city leg-data [0] cities-list)
-		ant-tour-length (tour-length ant-tour cities)] 
-		[ant-tour-length ant-tour]))
+	(let [cities-list (range 1 (count cities))]
+		(loop [tour [0] remaining-cities cities-list]
+			(if (or (empty? tour) (empty? remaining-cities))
+				[(tour-length tour cities) tour]
+				(let [next-city (choose-next-city leg-data (peek tour) remaining-cities)
+					new-tour (conj tour next-city)
+					new-remaining-cities (remove #(= % next-city) remaining-cities)]
+					(recur new-tour new-remaining-cities))))))
+	
   
 ; (def multi-generation-ant-tour
 ; 	[generations ant-number cities]
