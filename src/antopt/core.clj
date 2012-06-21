@@ -69,9 +69,9 @@
 
 
 (defn adjust-pheromone-for-tour
-	[leg-data tour cities]
-	(let [legs-in-tour (vec (map vec (partition 2  1 tour)))
-		tour-length (tour-length tour cities)]
+	[leg-data tour-with-length]
+	(let [[tour-length tour] tour-with-length
+		legs-in-tour (vec (map vec (partition 2  1 tour)))]
 		(loop [leg-data leg-data legs-in-tour legs-in-tour]
 			(if (empty? legs-in-tour)
 				leg-data
@@ -83,6 +83,13 @@
 					new-probability (/ new-weighted-tau weighted-distance)
 					new-leg-data (assoc leg-data leg-id {:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability})]
 					(recur new-leg-data (rest legs-in-tour)))))))
+
+(defn adjust-pheromone-for-tours
+	[leg-data tours-with-length]
+	(if (not (empty? tours-with-length))
+		(let [new-leg-data (adjust-pheromone-for-tour leg-data (first tours-with-length))]
+			(recur new-leg-data (vec (rest tours-with-length))))
+			leg-data)) 
 
 (defn choose-next-city 
 	[leg-data current-city remaining-cities]
@@ -107,7 +114,8 @@
 					new-remaining-cities (remove #(= % next-city) remaining-cities)]
 					(recur new-tour new-remaining-cities))))))
 	
-  
+
+
 ; (def multi-generation-ant-tour
 ; 	[generations ant-number cities]
 ; 	(let [leg-data (initialize-leg-data cities)]
