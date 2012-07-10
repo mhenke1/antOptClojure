@@ -21,8 +21,8 @@
 	(is (= 10.0 (tour-length [0 1] [[0 0] [4 3]])))
 	(is (= 10.0 (tour-length [0 2 1] [[0 0] [0 0] [4 3]]))))
 
-(deftest test-create-leg-info 
-	(let [test-info (create-leg-info [0 1] [[0 0] [4 3]])]
+(deftest test-initialize-leg-info 
+	(let [test-info (initialize-leg-info [0 1] [[0 0] [4 3]])]
 		(is (= 5.0 (:distance test-info)))
 		(is (= 25.0 (:weighted-distance test-info)))
 		(is (> 0.1 (:tau test-info))))) 
@@ -107,7 +107,7 @@
 
 (deftest test-ant-walk-tour
 	(let [[ant-tour-length tour] (ant-walk-tour (initialize-leg-data cities-on-map) cities-on-map)]
-		(println ant-tour-length ":" tour)
+	;	(println ant-tour-length ":" tour)
 		(is (= (count tour) (count cities-on-map)))
 		(is (= (count tour) (count (set tour))))
 		(is (some #{0} tour))
@@ -115,7 +115,6 @@
 		(is (some #{2} tour))
 		(is (= 0 (first tour)))))
 
-; (deftest test-multiple-ants-tour
-; 	(let [shortest-ant-tour (multiple-ants-tour 10 cities-on-map)
-; 		  [tour tour-length] shortest-ant-tour]
-; 		  (println "tour" tour ":" tour-length)))
+(deftest test-multi-generation-ant-tour 
+	(let [foo (multi-generation-ant-tour 3 5 cities-on-map)]
+	(is (= 1 1))))

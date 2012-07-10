@@ -40,7 +40,8 @@
     	   		(+ tour-length (leg-distance [(first tour) (peek tour)] cities))
     	    	tour-length)))	
 
-(defn create-leg-info 
+(defn initialize-leg-info 
+	"Inititialize all data of a connection between two cities"
 	[leg cities]
 	(let [[city1 city2] leg
 		  distance (leg-distance leg cities)
@@ -51,11 +52,13 @@
 		  {:distance distance :weighted-distance weighted-distance :tau tau :weighted-tau weighted-tau :probability probability}))
     
 (defn initialize-leg-data 
+	"Inititialize the data of all connections between the given cities"
 	[cities] 
 	(let [all-legs (filter (fn [[x y]] (not= x y)) (cartesian-product (range (count cities)) (range (count cities))))]
-		(reduce merge (map (fn [leg] {(vec leg) (create-leg-info leg cities)}) all-legs))))
+		(reduce merge (map (fn [leg] {(vec leg) (initialize-leg-info leg cities)}) all-legs))))
     
 (defn evaporate-leg 
+	"Evaporates pheromone on a connection between two cities"
 	[leg-id leg-info] 
 	(let [{:keys [distance weighted-distance tau]} leg-info
 		new-tau (* tau (- 1 rho))
@@ -64,11 +67,13 @@
 		{leg-id {:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability}}))
 
 (defn evaporate-pheromone 
+	"Evaporates pheromone on all connections between two cities"
 	[leg-data]
   	(reduce merge (map (fn [leg] (evaporate-leg (first leg) (last leg))) leg-data)))
 
 
 (defn adjust-pheromone-for-tour
+	"Amplifies pehoromone a tour walked by an ant"
 	[leg-data tour-with-length]
 	(let [[tour-length tour] tour-with-length
 		legs-in-tour (vec (map vec (partition 2  1 tour)))]
@@ -85,6 +90,7 @@
 					(recur new-leg-data (rest legs-in-tour)))))))
 
 (defn adjust-pheromone-for-tours
+	"Amplifies pehoromone a tour walked by a generation of ants"
 	[leg-data tours-with-length]
 	(if (not (empty? tours-with-length))
 		(let [new-leg-data (adjust-pheromone-for-tour leg-data (first tours-with-length))]
@@ -114,12 +120,12 @@
 					new-remaining-cities (remove #(= % next-city) remaining-cities)]
 					(recur new-tour new-remaining-cities))))))
 	
-
-
-; (def multi-generation-ant-tour
-; 	[generations ant-number cities]
-; 	(let [leg-data (initialize-leg-data cities)]
-; 		(repeat generations
-; 			(let [tour-list (map (fn [ant] (ant-walk-tour leg-data cities)) (range ant-number))
-; 				leg-data adjust-pheromone-for-tour
-; 				min-tour (apply min-key first tour-list)]))))
+(defn multi-generation-ant-tour
+	[generations ant-number cities]
+	(let [leg-data (initialize-leg-data cities)]
+		(loop [leg-data leg-data generations generations]
+			(let [tour-list (map (fn [ant] (ant-walk-tour leg-data cities)) (range ant-number))
+				new-leg-data (-> leg-data (adjust-pheromone-for-tour tour-list) (adjust-pheromone-for-tour (reverse tour-list)) (evaporate-pheromone))]
+				(if (= generations 0) 
+					new-leg-data
+					(recur new-leg-data (- generations 1)))))))
