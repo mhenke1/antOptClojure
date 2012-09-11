@@ -115,6 +115,6 @@
 		(is (some #{2} tour))
 		(is (= 0 (first tour)))))
 
-(deftest test-multi-generation-ant-tour 
-	(let [foo (multi-generation-ant-tour 3 5 cities-on-map)]
+(deftest test-one-generation-ant-tours 
+	(let [foo (one-generation-ant-tours2 (initialize-leg-data cities-on-map) 5 cities-on-map)]
 	(is (= 1 1))))

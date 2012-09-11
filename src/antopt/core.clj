@@ -120,12 +120,26 @@
 					new-remaining-cities (remove #(= % next-city) remaining-cities)]
 					(recur new-tour new-remaining-cities))))))
 	
-(defn multi-generation-ant-tour
-	[generations ant-number cities]
-	(let [leg-data (initialize-leg-data cities)]
-		(loop [leg-data leg-data generations generations]
-			(let [tour-list (map (fn [ant] (ant-walk-tour leg-data cities)) (range ant-number))
-				new-leg-data (-> leg-data (adjust-pheromone-for-tour tour-list) (adjust-pheromone-for-tour (reverse tour-list)) (evaporate-pheromone))]
-				(if (= generations 0) 
-					new-leg-data
-					(recur new-leg-data (- generations 1)))))))
+(defn one-generation-ant-tours
+	[leg-data ant-number cities]
+	(let [tour-list (map (fn [ant] (ant-walk-tour leg-data cities)) (range ant-number))
+		shortest-tour (apply min-key first tour-list)
+		new-leg-data (-> leg-data (adjust-pheromone-for-tour (vec (last shortest-tour))) (adjust-pheromone-for-tour (vec (reverse (last shortest-tour))) (evaporate-pheromone)))]
+		[new-leg-data tour-list shortest-tour]))
+
+(defn one-generation-ant-tours2
+	[leg-data ant-number cities]
+	(let [tour-list (map (fn [ant] (ant-walk-tour leg-data cities)) (range ant-number))
+		shortest-tour (apply min-key first tour-list)
+		new-leg-data (last shortest-tour)]
+		(println tour-list ":" shortest-tour ":" new-leg-data)))
+
+; (defn multi-generation-ant-tour
+; 	[generations ant-number cities]
+	; (let [leg-data (initialize-leg-data cities)]
+; 		(loop [leg-data leg-data generations generations shortest-tour [10000000 []]]
+; 			(let [[new-leg-data  tour-list new-shortest-tour] (one-generation-ant-tours leg-data ant-number cities)]
+; 				(println min-tour)
+; 				(if (= generations 0) 
+; 					new-leg-data
+; 					(recur new-leg-data (- generations 1) new-shortest-tor))))))
