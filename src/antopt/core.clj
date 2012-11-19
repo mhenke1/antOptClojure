@@ -1,5 +1,6 @@
 (ns antopt.core
-  (:use [clojure.math.combinatorics :only (cartesian-product)]))
+  (:use [clojure.math.combinatorics :only (cartesian-product)])
+  (:gen-class))
   
 (def alpha 1)
 (def beta 2)
@@ -88,14 +89,6 @@
 					new-connection-data (assoc connection-data connection-id {:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability})]
 					(recur new-connection-data (rest connections-in-tour)))))))
 
-(defn adjust-pheromone-for-multiple-tours
-	"Amplifies pehoromone a tour walked by a generation of ants"
-	[connection-data tours-with-length]
-	(if (not (empty? tours-with-length))
-		(let [new-connection-data (adjust-pheromone-for-tour connection-data (first tours-with-length))]
-			(recur new-connection-data (vec (rest tours-with-length))))
-			connection-data)) 
-
 (defn choose-next-city 
 	[connection-data current-city remaining-cities]
 	(let [current-city-list (vec (repeat (count remaining-cities) current-city))
@@ -138,3 +131,6 @@
 						(do 
 							(println number-of-generations ":" generation-shortest-tour)
 							(recur (- number-of-generations 1) new-connection-data generation-shortest-tour))))))))
+
+(defn -main [& args]
+	(antopt))

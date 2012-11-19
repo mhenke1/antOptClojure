@@ -122,3 +122,7 @@
 (deftest test-antopt 
         (let [foo (antopt)]
         (is (= 1 1))))
+
+(deftest test-antopt 
+        (let [foo (antopt)]
+        (is (= 1 1))))
