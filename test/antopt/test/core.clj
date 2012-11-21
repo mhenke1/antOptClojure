@@ -119,10 +119,7 @@
         (let [foo (one-generation-ant-tours (initialize-all-connections cities-on-map) 5 cities-on-map)]
         (is (= 1 1))))
 
-(deftest test-antopt 
-        (let [foo (antopt)]
-        (is (= 1 1))))
+;(deftest test-antopt 
+;        (let [foo (antopt)]
+;        (is (= 1 1))))
 
-(deftest test-antopt 
-        (let [foo (antopt)]
-        (is (= 1 1))))
