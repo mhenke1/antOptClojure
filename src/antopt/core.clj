@@ -158,4 +158,5 @@
 
 (defn -main [& args]
 	(let [shortest-tour (antopt cities-on-map)]
+		(shutdown-agents)
 		(println "Shortest Tour:" shortest-tour)))
