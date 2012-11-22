@@ -5,8 +5,8 @@
 (def alpha 1)
 (def beta 2)
 (def rho 0.5)
-(def number-of-ants 500)
-(def number-of-generations 50)
+(def number-of-ants 200)
+(def number-of-generations 125)
 
 ;xqf131 564
 (def vlsi-problem [
@@ -137,7 +137,7 @@
 
 (defn one-generation-ant-tours
 	[connection-data ant-number cities]
-	(let [tour-list (map (fn [ant] (walk-ant-tour connection-data cities)) (range ant-number))
+	(let [tour-list (pmap (fn [ant] (walk-ant-tour connection-data cities)) (range ant-number))
 		shortest-tour (apply min-key first tour-list)
 		new-connection-data (-> connection-data (adjust-pheromone-for-multiple-tours tour-list) (evaporate-all-connections))]
 		{:new-connection-data new-connection-data :generation-shortest-tour shortest-tour}))
@@ -148,12 +148,14 @@
 		(loop [number-of-generations number-of-generations connection-data connection-data shortest-tour [Long/MAX_VALUE []]]
 			(if (> number-of-generations 0) 
 				(let [{:keys [new-connection-data generation-shortest-tour]} (one-generation-ant-tours connection-data number-of-ants cities)]
-					(println number-of-generations)
+					(println number-of-generations) 
 					(if (>= (first generation-shortest-tour) (first shortest-tour))
 						(recur (- number-of-generations 1) new-connection-data shortest-tour)
 						(do 
 							(println generation-shortest-tour)
-							(recur (- number-of-generations 1) new-connection-data generation-shortest-tour))))))))
+							(recur (- number-of-generations 1) new-connection-data generation-shortest-tour))))
+			shortest-tour))))
 
 (defn -main [& args]
-	(antopt vlsi-problem))
+	(let [shortest-tour (antopt cities-on-map)]
+		(println "Shortest Tour:" shortest-tour)))
