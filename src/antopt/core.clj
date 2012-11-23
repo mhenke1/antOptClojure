@@ -160,8 +160,8 @@
 							(recur (- number-of-generations 1) new-connection-data generation-shortest-tour))))
 			shortest-tour))))
 
-(defn -main [& args]
-	"Main function to test the optimization"
-	(let [shortest-tour (antopt cities-on-map)]
-		(shutdown-agents)
-		(println "Shortest Tour:" shortest-tour)))
+; (defn -main [& args]
+; 	"Main function to test the optimization"
+; 	(let [shortest-tour (antopt cities-on-map)]
+; 		(shutdown-agents)
+; 		(println "Shortest Tour:" shortest-tour)))
