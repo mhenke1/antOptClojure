@@ -40,26 +40,26 @@
 	(let [[x1 y1] point1 [x2 y2] point2] 
 		(Math/sqrt (+ (Math/pow (- x2 x1) 2) (Math/pow (- y2 y1) 2)))))
 
-(defn connection-length 
-	"Calculates euclidian distance between two cities"
+(defn length-of-connection 
+	"Calculates euclidian distance between two given cities"
 	[connection cities] 
 	(let [[city-id1 city-id2] connection]
 		(euclidian-distance (cities city-id1) (cities city-id2))))
     
-(defn tour-length 
+(defn length-of-tour
 	"Calculates the total length of a given tour"
 	[tour cities] 
     (let [connections-in-tour (partition 2  1 tour)
-    	 tour-length  (reduce + (map #(connection-length  % cities) connections-in-tour))]
+    	 length-of-tour (reduce + (map #(length-of-connection  % cities) connections-in-tour))]
     	 (if (>= (count tour) 2) 
-    	   		(+ tour-length (connection-length  [(first tour) (peek tour)] cities))
-    	    	tour-length)))	
+    	   		(+ length-of-tour(length-of-connection  [(first tour) (peek tour)] cities))
+    	    	length-of-tour)))	
 
 (defn create-connection-data 
 	"Inititialize all data for a connection between two cities"
 	[connection cities]
 	(let [[city1 city2] connection
-		  distance (connection-length connection cities)
+		  distance (length-of-connection connection cities)
 		  weighted-distance (Math/pow distance beta) 
 		  tau (* (rand) 0.1)
 		  weighted-tau (Math/pow tau alpha)
@@ -89,7 +89,7 @@
 (defn adjust-pheromone-for-tour
 	"Amplifies pehoromone a tour walked by an ant"
 	[connection-data tour-with-length]
-	(let [[tour-length tour] tour-with-length
+	(let [[length-of-tour tour] tour-with-length
 		connections-in-tour (vec (map vec (partition 2  1 tour)))]
 		(loop [connection-data connection-data connections-in-tour connections-in-tour]
 			(if (empty? connections-in-tour)
@@ -97,7 +97,7 @@
 				(let [connection-id (first connections-in-tour)
 					connection-info (connection-data connection-id)
 				 	{:keys [distance weighted-distance tau]} connection-info
-					new-tau (+ tau (/ 1 tour-length))
+					new-tau (+ tau (/ 1 length-of-tour))
 					new-weighted-tau (Math/pow new-tau alpha)
 					new-probability (/ new-weighted-tau weighted-distance)
 					new-connection-data (assoc connection-data connection-id {:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability})]
@@ -113,6 +113,7 @@
                         (recur new-connection-data (vec (rest tours-with-length)))))))
 
 (defn choose-next-city 
+	"Amplifies pehoromone tours walked by ants"
 	[connection-data current-city remaining-cities]
 	(let [current-city-list (vec (repeat (count remaining-cities) current-city))
 		connections (vec (map vector current-city-list remaining-cities))
@@ -125,24 +126,27 @@
 				next-city))))
 
 (defn walk-ant-tour
+	"Computes a tour passing all given cities"
 	[connection-data cities]
 	(let [cities-list (range 1 (count cities))]
 		(loop [tour [0] remaining-cities cities-list]
 			(if (or (empty? tour) (empty? remaining-cities))
-				[(tour-length tour cities) tour]
+				[(length-of-tour tour cities) tour]
 				(let [next-city (choose-next-city connection-data (peek tour) remaining-cities)
 					new-tour (conj tour next-city)
 					new-remaining-cities (remove #(= % next-city) remaining-cities)]
 					(recur new-tour new-remaining-cities))))))
 
 (defn one-generation-ant-tours
-	[connection-data ant-number cities]
-	(let [tour-list (pmap (fn [ant] (walk-ant-tour connection-data cities)) (range ant-number))
+	"Computes tours passing all given cities concurrently for a given number of ants"
+	[connection-data number-of-ants cities]
+	(let [tour-list (pmap (fn [ant] (walk-ant-tour connection-data cities)) (range number-of-ants))
 		shortest-tour (apply min-key first tour-list)
 		new-connection-data (-> connection-data (adjust-pheromone-for-multiple-tours tour-list) (evaporate-all-connections))]
 		{:new-connection-data new-connection-data :generation-shortest-tour shortest-tour}))
 
 (defn antopt
+	"Computes the shortest tour through a number of given cities using ant colony optimization"
 	[cities]
 	(let [connection-data (initialize-all-connections cities)]
 		(loop [number-of-generations number-of-generations connection-data connection-data shortest-tour [Long/MAX_VALUE []]]
@@ -157,6 +161,7 @@
 			shortest-tour))))
 
 (defn -main [& args]
+	"Main function to test the optimization"
 	(let [shortest-tour (antopt cities-on-map)]
 		(shutdown-agents)
 		(println "Shortest Tour:" shortest-tour)))

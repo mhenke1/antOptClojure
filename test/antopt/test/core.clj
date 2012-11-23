@@ -12,14 +12,14 @@
 	(is (= 0.0 (euclidian-distance [0 0] [0 0])))
 	(is (= 5.0 (euclidian-distance [0 0] [4 3]))))
 
-(deftest test-connection-length 
-	(is (= 0.0 (connection-length  [0 1] [[0 0] [0 0]])))
-	(is (= 5.0 (connection-length  [0 1] [[0 0] [4 3]]))))
+(deftest test-length-of-connection 
+	(is (= 0.0 (length-of-connection  [0 1] [[0 0] [0 0]])))
+	(is (= 5.0 (length-of-connection  [0 1] [[0 0] [4 3]]))))
 
-(deftest test-tour-length
-	(is (= 0 (tour-length [0] [0 0])))
-	(is (= 10.0 (tour-length [0 1] [[0 0] [4 3]])))
-	(is (= 10.0 (tour-length [0 2 1] [[0 0] [0 0] [4 3]]))))
+(deftest test-length-of-tour
+	(is (= 0 (length-of-tour [0] [0 0])))
+	(is (= 10.0 (length-of-tour [0 1] [[0 0] [4 3]])))
+	(is (= 10.0 (length-of-tour [0 2 1] [[0 0] [0 0] [4 3]]))))
 
 (deftest test-create-connection-data 
 	(let [test-info (create-connection-data [0 1] [[0 0] [4 3]])]
@@ -106,8 +106,8 @@
         (is (= next-city2 0))))
 
 (deftest test-walk-ant-tour
-    (let [[ant-tour-length tour] (walk-ant-tour (initialize-all-connections cities-on-map) cities-on-map)]
-;       (println ant-tour-length ":" tour)
+    (let [[ant-length-of-tour tour] (walk-ant-tour (initialize-all-connections cities-on-map) cities-on-map)]
+;       (println ant-length-of-tour ":" tour)
         (is (= (count tour) (count cities-on-map)))
         (is (= (count tour) (count (set tour))))
         (is (some #{0} tour))
