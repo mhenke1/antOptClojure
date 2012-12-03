@@ -8,6 +8,8 @@
 (def number-of-ants 200)
 (def number-of-generations 125)
 
+(def shortest-tour (atom [Long/MAX_VALUE []]))
+
 ;xqf131 564
 (def vlsi-problem [
 	[0 13], [0 26], [0 27], [0 39], [2 0], [5 13], [5 19], [5 25], [5 31], [5 37], [5 43], [5 8], [8 0], [9 10],
@@ -149,19 +151,20 @@
 	"Computes the shortest tour through a number of given cities using ant colony optimization"
 	[cities]
 	(let [connection-data (initialize-all-connections cities)]
-		(loop [number-of-generations number-of-generations connection-data connection-data shortest-tour [Long/MAX_VALUE []]]
+		(loop [number-of-generations number-of-generations connection-data connection-data]
 			(if (> number-of-generations 0) 
 				(let [{:keys [new-connection-data generation-shortest-tour]} (one-generation-ant-tours connection-data number-of-ants cities)]
 					(println number-of-generations) 
-					(if (>= (first generation-shortest-tour) (first shortest-tour))
-						(recur (- number-of-generations 1) new-connection-data shortest-tour)
+					(if (>= (first generation-shortest-tour) (first @shortest-tour))
+						(recur (- number-of-generations 1) new-connection-data)
 						(do 
-							(println generation-shortest-tour)
-							(recur (- number-of-generations 1) new-connection-data generation-shortest-tour))))
-			shortest-tour))))
+							(reset! shortest-tour generation-shortest-tour)
+							(println @shortest-tour)
+							(recur (- number-of-generations 1) new-connection-data))))
+			@shortest-tour))))
 
-; (defn -main [& args]
-; 	"Main function to test the optimization"
-; 	(let [shortest-tour (antopt cities-on-map)]
-; 		(shutdown-agents)
-; 		(println "Shortest Tour:" shortest-tour)))
+(defn -main [& args]
+	"Main function to test the optimization"
+	(let [shortest-antopt-tour (antopt cities-on-map)]
+		(shutdown-agents)
+		(println "Shortest Tour:" shortest-antopt-tour)))
