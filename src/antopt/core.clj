@@ -24,6 +24,7 @@
 	[79 10], [79 33], [79 37], [80 10], [80 41], [80 5], [81 17], [84 20], [84 24], [84 29], [84 34], [84 38], [84 6], [107 27]
 ])
   
+;eil51 426
 (def cities-on-map [
 	[37, 52], [49, 49], [52, 64], [20, 26], [40, 30], [21, 47],
 	[17, 63], [31, 62], [52, 33], [51, 21], [42, 41], [31, 32],
@@ -54,7 +55,7 @@
     (let [connections-in-tour (partition 2  1 tour)
     	 length-of-tour (reduce + (map #(length-of-connection  % cities) connections-in-tour))]
     	 (if (>= (count tour) 2) 
-    	   		(+ length-of-tour(length-of-connection  [(first tour) (peek tour)] cities))
+    	   		(+ length-of-tour (length-of-connection  [(first tour) (peek tour)] cities))
     	    	length-of-tour)))	
 
 (defn create-connection-data 
@@ -163,8 +164,8 @@
 							(recur (- number-of-generations 1) new-connection-data))))
 			@shortest-tour))))
 
-(defn -main [& args]
-	"Main function to test the optimization"
-	(let [shortest-antopt-tour (antopt cities-on-map)]
-		(shutdown-agents)
-		(println "Shortest Tour:" shortest-antopt-tour)))
+; (defn -main [& args]
+; 	"Main function to test the optimization"
+; 	(let [shortest-antopt-tour (antopt cities-on-map)]
+; 		(shutdown-agents)
+; 		(println "Shortest Tour:" shortest-antopt-tour)))
