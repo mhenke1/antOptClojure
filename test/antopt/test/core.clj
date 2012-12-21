@@ -1,5 +1,5 @@
 (ns antopt.test.core
-  (:use [antopt.core])
+  (:use antopt.core antopt.data)
   (:use [clojure.test]))
 
 (def test-data {[2 1] {:distance 5.0, :weighted-distance 25.0, :tau 0.019983426066513734, :weighted-tau 0.019983426066513734, :probability 7.993370426605494E-4}, 
@@ -99,16 +99,16 @@
         (is (= (:weighted-distance test-evap2) (:weighted-distance test-connection2)))
         (is (> (:probability test-evap2) (:probability test-connection2)))))
 
-(deftest test-choose-next-city
-    (let [next-city1 (choose-next-city test-data 0 [1 2])
-    	next-city2 (choose-next-city test-data 0 [])]
-        (is (some #{next-city1} [1 2]))
-        (is (= next-city2 0))))
+(deftest test-choose-next-node-on-tour
+    (let [next-node1 (choose-next-node-on-tour test-data 0 [1 2])
+    	next-node2 (choose-next-node-on-tour test-data 0 [])]
+        (is (some #{next-node1} [1 2]))
+        (is (= next-node2 0))))
 
 (deftest test-walk-ant-tour
-    (let [[ant-length-of-tour tour] (walk-ant-tour (initialize-all-connections cities-on-map) cities-on-map)]
+    (let [[ant-length-of-tour tour] (walk-ant-tour (initialize-all-connections nodes) nodes)]
 ;       (println ant-length-of-tour ":" tour)
-        (is (= (count tour) (count cities-on-map)))
+        (is (= (count tour) (count nodes)))
         (is (= (count tour) (count (set tour))))
         (is (some #{0} tour))
         (is (some #{1} tour))
@@ -116,10 +116,6 @@
         (is (= 0 (first tour)))))
 
 (deftest test-one-generation-ant-tours 
-        (let [foo (one-generation-ant-tours (initialize-all-connections cities-on-map) 5 cities-on-map)]
+        (let [foo (one-generation-ant-tours (initialize-all-connections nodes) 5 nodes)]
         (is (= 1 1))))
-
-;(deftest test-antopt 
-;        (let [foo (antopt)]
-;        (is (= 1 1))))
 
