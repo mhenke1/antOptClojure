@@ -1,5 +1,5 @@
 (ns antopt.core
-  (:use antopt.data [clojure.math.combinatorics :only (cartesian-product)])
+  (:use [clojure.math.combinatorics :only (cartesian-product)])
   (:gen-class))
   
 (def alpha 1)

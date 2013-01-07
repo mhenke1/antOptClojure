@@ -1,6 +1,15 @@
 (ns antoptui.core
-  (:use antopt.core antopt.data seesaw.core seesaw.graphics)
+  (:use antopt.core seesaw.core seesaw.graphics)
   (:gen-class))
+
+(def nodes (atom []))
+
+(defn read-from-file-safely [filename]
+  (with-open
+      [r (java.io.PushbackReader.
+        (clojure.java.io/reader filename))]
+        (binding [*read-eval* false]
+          (read r))))
 
 (defn paint-node
   [c g node]
@@ -33,8 +42,8 @@
 
 (defn paint
   [c g]
-  (do (push g (paint-tour c g @shortest-tour nodes))
-      (paint-nodes c g nodes)))
+  (do (push g (paint-tour c g @shortest-tour @nodes))
+      (paint-nodes c g @nodes)))
 
 (defn content-panel[]
   (border-panel
@@ -59,8 +68,10 @@
 
 (defn -main [& args]
   "Main function to test the optimization"
+  ;(reset! nodes (read-from-file-safely "tsmdata/xqf131.tsm"))
+  (reset! nodes (read-from-file-safely "tsmdata/eil51.tsm"))
   (native!)
-  (make-frame nodes)
-  (let [shortest-antopt-tour (antopt nodes)]
+  (make-frame @nodes)
+  (let [shortest-antopt-tour (antopt @nodes)]
     (shutdown-agents)
     (println "Shortest Tour:" shortest-antopt-tour)))
