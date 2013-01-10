@@ -11,13 +11,16 @@
         (binding [*read-eval* false]
           (read r))))
 
+(defn scaled-node-cordinates
+  [node]
+  (let [[x y] node]
+    [(+ 10 (* x 5)) (+ 10 (* y 5))]))
+
 (defn paint-node
   [c g node]
-   (let [[x y] node
-    correctedx (* x 5)
-    correctedy (* y 5)
-    dot-style (style :background "#00bc00":stroke (stroke :width 3))]
-   (do (draw g (circle correctedx correctedy 5) dot-style))))
+   (let [[x y] (scaled-node-cordinates node)
+      dot-style (style :background "#00bc00":stroke (stroke :width 3))]
+   (do (draw g (circle x y 5) dot-style))))
 
 (defn paint-nodes
   [c g nodes]
@@ -26,10 +29,8 @@
 (defn paint-connection
   [c g connection nodes]
   (let [[node-id1 node-id2] connection
-    correctedx1 (* (first (nodes node-id1)) 5)
-    correctedy1 (* (last (nodes node-id1)) 5)
-    correctedx2 (* (first (nodes node-id2)) 5)
-    correctedy2 (* (last (nodes node-id2)) 5)
+    [correctedx1 correctedy1] (scaled-node-cordinates (nodes node-id1))
+    [correctedx2 correctedy2] (scaled-node-cordinates (nodes node-id2))
     line-style (style :foreground "#FF0000" :stroke 3 :cap :round)]
   (do (draw g (line correctedx1 correctedy1 correctedx2 correctedy2) line-style))))
 
@@ -42,8 +43,8 @@
 
 (defn paint
   [c g]
-  (do (push g (paint-tour c g @shortest-tour @nodes))
-      (paint-nodes c g @nodes)))
+  (do (paint-tour c g @shortest-tour @nodes))
+      (paint-nodes c g @nodes))
 
 (defn content-panel[]
   (border-panel
@@ -54,11 +55,10 @@
 
 (defn make-frame 
   [nodes]
-  (let [maxx (+ (* (reduce max (map first nodes)) 5) 50)
-        maxy (+ (* (reduce max (map last nodes)) 5) 50)
+  (let [[scaled-max-x scaled-max-y] (scaled-node-cordinates [(reduce max (map first nodes)) (reduce max (map last nodes))])
         f (frame :title "Ant optimization"
-                 :width maxx 
-                 :height maxy
+                 :width (+ 50 scaled-max-x)
+                 :height (+ 50 scaled-max-y)
                  :on-close :dispose
                  :visible? true
                  :content (content-panel))]
@@ -68,8 +68,8 @@
 
 (defn -main [& args]
   "Main function to test the optimization"
-  ;(reset! nodes (read-from-file-safely "tsmdata/xqf131.tsm"))
-  (reset! nodes (read-from-file-safely "tsmdata/eil51.tsm"))
+  (reset! nodes (read-from-file-safely "tsmdata/xqf131.tsm"))
+  ;(reset! nodes (read-from-file-safely "tsmdata/eil51.tsm"))
   (native!)
   (make-frame @nodes)
   (let [shortest-antopt-tour (antopt @nodes)]
