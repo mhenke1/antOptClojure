@@ -20,16 +20,14 @@
 	"Calculates euclidian distance between two given nodes"
 	[connection nodes] 
 	(let [[node-id1 node-id2] connection]
-		(euclidian-distance (nodes node-id1) (nodes node-id2))))
+		(if (= node-id1 node-id2) 0.0
+			(euclidian-distance (nodes node-id1) (nodes node-id2)))))
     
 (defn length-of-tour
 	"Calculates the total length of a given tour"
 	[tour nodes] 
-    (let [connections-in-tour (partition 2  1 tour)
-    	 length-of-tour (reduce + (map #(length-of-connection  % nodes) connections-in-tour))]
-    	 (if (>= (count tour) 2) 
-    	   		(+ length-of-tour (length-of-connection  [(first tour) (peek tour)] nodes))
-    	    	length-of-tour)))	
+    (let [connections-in-tour (partition 2  1 tour)]
+    	 (apply + (map #(length-of-connection  % nodes) connections-in-tour))))	
 
 (defn create-connection-data 
 	"Inititialize all data for a connection between two nodes"
@@ -46,12 +44,13 @@
 	"Inititialize the data of all connections between the given nodes"
 	[nodes] 
 	(let [all-connections (filter (fn [[x y]] (not= x y)) (cartesian-product (range (count nodes)) (range (count nodes))))]
-		(reduce merge (map (fn [connection] {(vec connection) (create-connection-data connection nodes)}) all-connections))))
+		(apply merge (map (fn [connection] {(vec connection) (create-connection-data connection nodes)}) all-connections))))
 
-(defn evaporate-connection-data 
+(defn evaporate-one-connection 
 	"Evaporates pheromone on a connection between two nodes"
-	[connection-id connection-data] 
-	(let [{:keys [distance weighted-distance tau]} connection-data
+	[connection-data] 
+	(let [[connection-id one-connection-data] connection-data
+		{:keys [distance weighted-distance tau]} one-connection-data
 		new-tau (* tau (- 1 rho))
 		new-weighted-tau (Math/pow new-tau alpha)
 		new-probability (/ new-weighted-tau weighted-distance)]
@@ -60,7 +59,7 @@
 (defn evaporate-all-connections
 	"Evaporates pheromone on all connections between two nodes"
 	[connection-data]
-  	(reduce merge (map (fn [connection] (evaporate-connection-data (first connection) (last connection))) connection-data)))
+  	(apply merge (map #(evaporate-one-connection %) connection-data)))
 
 (defn adjust-pheromone-for-tour
 	"Amplifies pehoromone a tour walked by an ant"
@@ -106,8 +105,8 @@
 	[connection-data nodes]
 	(let [nodes-list (range 1 (count nodes))]
 		(loop [tour [0] remaining-nodes nodes-list]
-			(if (or (empty? tour) (empty? remaining-nodes))
-				[(length-of-tour tour nodes) tour]
+			(if (empty? remaining-nodes)
+				[(length-of-tour tour nodes) (conj tour (first tour))]
 				(let [next-node (choose-next-node-on-tour connection-data (peek tour) remaining-nodes)
 					new-tour (conj tour next-node)
 					new-remaining-nodes (remove #(= % next-node) remaining-nodes)]
