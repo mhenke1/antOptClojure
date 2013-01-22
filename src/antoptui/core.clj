@@ -37,9 +37,7 @@
 (defn paint-tour
   [c g tour nodes]
   (let [connections-in-tour (partition 2  1 (last tour))]
-    (doseq [connection connections-in-tour] (paint-connection c g connection nodes))
-    (if (>= (count (last tour)) 2)
-      (paint-connection c g [(first (last tour)) (peek (last tour))] nodes))))
+    (doseq [connection connections-in-tour] (paint-connection c g connection nodes))))
 
 (defn paint
   [c g]

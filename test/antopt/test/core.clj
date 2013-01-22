@@ -25,12 +25,13 @@
 
 (deftest test-length-of-connection 
 	(is (= 0.0 (length-of-connection  [0 1] [[0 0] [0 0]])))
-	(is (= 5.0 (length-of-connection  [0 1] [[0 0] [4 3]]))))
+	(is (= 5.0 (length-of-connection  [0 1] [[0 0] [4 3]])))
+    (is (= 0.0 (length-of-connection  [1 1] [[0 0] [4 3]]))))
 
 (deftest test-length-of-tour
 	(is (= 0 (length-of-tour [0] [0 0])))
-	(is (= 10.0 (length-of-tour [0 1] [[0 0] [4 3]])))
-	(is (= 10.0 (length-of-tour [0 2 1] [[0 0] [0 0] [4 3]]))))
+	(is (= 10.0 (length-of-tour [0 1 0] [[0 0] [4 3]])))
+	(is (= 10.0 (length-of-tour [0 2 1 0] [[0 0] [0 0] [4 3]]))))
 
 (deftest test-create-connection-data 
 	(let [test-info (create-connection-data [0 1] [[0 0] [4 3]])]
@@ -49,9 +50,9 @@
         (is (= (:distance test-info1) (:distance test-info2)))
         (is (= (:weighted-distance test-info1) (:weighted-distance test-info2)))))
 
-(deftest test-evaporate-connection-data 
+(deftest test-evaporate-one-connection 
     (let [test-connection (test-data [0 1])
-         test-evap-data (evaporate-connection-data [0 1] test-connection)
+         test-evap-data (evaporate-one-connection [[0 1] test-connection])
          test-evap (test-evap-data [0 1])]
         (is (= (:distance test-evap) (:distance test-connection)))
         (is (< (:tau test-evap) (:tau test-connection)))
@@ -119,8 +120,8 @@
 (deftest test-walk-ant-tour
     (let [[ant-length-of-tour tour] (walk-ant-tour (initialize-all-connections nodes) nodes)]
 ;       (println ant-length-of-tour ":" tour)
-        (is (= (count tour) (count nodes)))
-        (is (= (count tour) (count (set tour))))
+        (is (= (count tour) (+ 1 (count nodes))))
+        (is (= (count tour) (+ 1 (count (set tour)))))
         (is (some #{0} tour))
         (is (some #{1} tour))
         (is (some #{2} tour))
