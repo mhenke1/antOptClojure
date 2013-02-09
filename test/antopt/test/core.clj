@@ -77,6 +77,16 @@
 	    (is (= (:weighted-distance test-evap2) (:weighted-distance test-connection2)))
 	    (is (< (:probability test-evap2) (:probability test-connection2)))))
 
+(deftest test-adjust-pheromone-for-one-connection
+    (let [evap-data (adjust-pheromone-for-one-connection 10 test-data [0 1])
+        test-connection (test-data [0 1])
+        test-evap (evap-data [0 1])]
+        (is (= (:distance test-evap) (:distance test-connection)))
+        (is (> (:tau test-evap) (:tau test-connection)))
+        (is (> (:weighted-tau test-evap) (:weighted-tau test-connection)))
+        (is (= (:weighted-distance test-evap) (:weighted-distance test-connection)))
+        (is (> (:probability test-evap) (:probability test-connection)))))
+
 (deftest test-adjust-pheromone-for-tour
     (let [evap-data (adjust-pheromone-for-tour test-data [10 [0 1 2]])
         test-connection1 (test-data [0 1])

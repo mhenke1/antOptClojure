@@ -61,22 +61,26 @@
 	[connection-data]
   	(apply merge (map #(evaporate-one-connection %) connection-data)))
 
+(defn adjust-pheromone-for-one-connection
+	"Amplifies pehoromone a connection walked by an ant"
+	[length-of-tour connection-data connection-id]
+	(let [connection-info (connection-data connection-id)
+		{:keys [distance weighted-distance tau]} connection-info
+		new-tau (+ tau (/ 1 length-of-tour))
+		new-weighted-tau (Math/pow new-tau alpha)
+		new-probability (/ new-weighted-tau weighted-distance)
+		new-connection-data (assoc connection-data connection-id {:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability})]
+	new-connection-data))
+
 (defn adjust-pheromone-for-tour
 	"Amplifies pehoromone a tour walked by an ant"
 	[connection-data tour-with-length]
 	(let [[length-of-tour tour] tour-with-length
-		connections-in-tour (vec (map vec (partition 2  1 tour)))]
-		(loop [connection-data connection-data connections-in-tour connections-in-tour]
-			(if (empty? connections-in-tour)
-				connection-data
-				(let [connection-id (first connections-in-tour)
-					connection-info (connection-data connection-id)
-				 	{:keys [distance weighted-distance tau]} connection-info
-					new-tau (+ tau (/ 1 length-of-tour))
-					new-weighted-tau (Math/pow new-tau alpha)
-					new-probability (/ new-weighted-tau weighted-distance)
-					new-connection-data (assoc connection-data connection-id {:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability})]
-					(recur new-connection-data (rest connections-in-tour)))))))
+		connections-in-tour (partition 2  1 tour)
+		adjust-pheromone-for-connection (partial adjust-pheromone-for-one-connection length-of-tour)
+		adjusted-connection-data (reduce adjust-pheromone-for-connection connection-data connections-in-tour)]
+	adjusted-connection-data)) 
+			
 
 (defn adjust-pheromone-for-multiple-tours
         "Amplifies pehoromone a tour walked by a generation of ants"
