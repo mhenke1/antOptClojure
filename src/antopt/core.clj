@@ -32,8 +32,7 @@
 (defn create-connection-data 
 	"Inititialize all data for a connection between two nodes"
 	[connection nodes]
-	(let [[node1 node2] connection
-		  distance (length-of-connection connection nodes)
+	(let [distance (length-of-connection connection nodes)
 		  weighted-distance (Math/pow distance beta) 
 		  tau (* (rand) 0.1)
 		  weighted-tau (Math/pow tau alpha)
@@ -64,12 +63,12 @@
 (defn adjust-pheromone-for-one-connection
 	"Amplifies pehoromone a connection walked by an ant"
 	[length-of-tour connection-data connection-id]
-	(let [connection-info (connection-data connection-id)
-		{:keys [distance weighted-distance tau]} connection-info
+	(let [{:keys [distance weighted-distance tau]} (connection-data connection-id)
 		new-tau (+ tau (/ 1 length-of-tour))
 		new-weighted-tau (Math/pow new-tau alpha)
 		new-probability (/ new-weighted-tau weighted-distance)
-		new-connection-data (assoc connection-data connection-id {:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability})]
+		new-connection-data (assoc connection-data connection-id 
+			{:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability})]
 	new-connection-data))
 
 (defn adjust-pheromone-for-tour
@@ -77,19 +76,14 @@
 	[connection-data tour-with-length]
 	(let [[length-of-tour tour] tour-with-length
 		connections-in-tour (partition 2  1 tour)
-		adjust-pheromone-for-connection (partial adjust-pheromone-for-one-connection length-of-tour)
-		adjusted-connection-data (reduce adjust-pheromone-for-connection connection-data connections-in-tour)]
+		adjusted-connection-data (reduce (partial adjust-pheromone-for-one-connection length-of-tour) connection-data connections-in-tour)]
 	adjusted-connection-data)) 
 			
 
 (defn adjust-pheromone-for-multiple-tours
         "Amplifies pehoromone a tour walked by a generation of ants"
         [connection-data tours-with-length]
-        (loop [connection-data connection-data tours-with-length tours-with-length]
-	        (if (empty? tours-with-length)
-        		connection-data
-                (let [new-connection-data (adjust-pheromone-for-tour connection-data (first tours-with-length))]
-                        (recur new-connection-data (vec (rest tours-with-length)))))))
+        (reduce adjust-pheromone-for-tour connection-data tours-with-length))
 
 (defn choose-next-node-on-tour 
 	"Chooses the next node to walk based on the given pheromone data"
