@@ -122,10 +122,8 @@
         (is (> (:probability test-evap2) (:probability test-connection2)))))
 
 (deftest test-choose-next-node-on-tour
-    (let [next-node1 (choose-next-node-on-tour test-data 0 [1 2])
-    	next-node2 (choose-next-node-on-tour test-data 0 [])]
-        (is (some #{next-node1} [1 2]))
-        (is (= next-node2 0))))
+    (let [next-node1 (choose-next-node-on-tour test-data 0 [1 2])]
+        (is (some #{next-node1} [1 2]))))
 
 (deftest test-walk-ant-tour
     (let [[ant-length-of-tour tour] (walk-ant-tour (initialize-all-connections nodes) nodes)]
