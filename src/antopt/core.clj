@@ -79,7 +79,6 @@
 		adjusted-connection-data (reduce (partial adjust-pheromone-for-one-connection length-of-tour) connection-data connections-in-tour)]
 	adjusted-connection-data)) 
 			
-
 (defn adjust-pheromone-for-multiple-tours
         "Amplifies pehoromone a tour walked by a generation of ants"
         [connection-data tours-with-length]
