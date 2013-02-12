@@ -91,7 +91,8 @@
 	(let [current-node-list (vec (repeat (count remaining-nodes) current-node))
 		connections (vec (map vector current-node-list remaining-nodes))
 		added-connection-probabilities (reductions + (map #(:probability (connection-data %)) connections))
-		limiting-element (count (filter #(< % (* (rand) (last added-connection-probabilities))) added-connection-probabilities))]
+		limit (* (rand) (last added-connection-probabilities))
+		limiting-element (count (filter #(< % limit) added-connection-probabilities))]
 		(nth remaining-nodes limiting-element)))
 
 (defn walk-ant-tour
@@ -102,8 +103,8 @@
 			(if (empty? remaining-nodes)
 				[(length-of-tour tour nodes) (conj tour (first tour))]
 				(let [next-node (choose-next-node-on-tour connection-data (peek tour) remaining-nodes)
-					new-remaining-nodes (remove #(= % next-node) remaining-nodes)]
-					(recur (conj tour next-node) new-remaining-nodes))))))
+ 					new-remaining-nodes (remove #(= % next-node) remaining-nodes)]
+-					(recur (conj tour next-node) new-remaining-nodes))))))
 
 (defn one-generation-ant-tours
 	"Computes tours passing all given nodes concurrently for a given number of ants"
