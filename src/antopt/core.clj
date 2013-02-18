@@ -10,6 +10,13 @@
 
 (def shortest-tour (atom [Long/MAX_VALUE []]))
 
+(defn read-from-file-safely [filename]
+  (with-open
+      [r (java.io.PushbackReader.
+        (clojure.java.io/reader filename))]
+        (binding [*read-eval* false]
+          (read r))))
+
 (defn euclidian-distance 
 	"Calculates euclidian distance between two given points"
 	[point1 point2] 
@@ -102,7 +109,7 @@
 				(let [next-node (choose-next-node-on-tour connection-data (peek tour) remaining-nodes)
  					new-remaining-nodes (remove #(= % next-node) remaining-nodes)]
 -					(recur (conj tour next-node) new-remaining-nodes))
-				[(length-of-tour tour nodes) (conj tour (first tour))]))))
+				[(length-of-tour (conj tour 0) nodes) (conj tour 0)]))))
 				
 
 (defn one-generation-ant-tours
@@ -127,8 +134,12 @@
 					(recur (- number-of-generations 1) new-connection-data))))
 		@shortest-tour))
 
-; (defn -main [& args]
-; 	"Main function to test the optimization"
-; 	(let [shortest-antopt-tour (antopt nodes)]
-; 		(shutdown-agents)
-; 		(println "Shortest Tour:" shortest-antopt-tour)))
+(defn -main [& args]
+	"Main function to test the optimization"
+	(let [ ;nodes (read-from-file-safely "tsmdata/belgiumtour.tsm")
+ 		   ;nodes (read-from-file-safely "tsmdata/xqf131.tsm")
+ 		   ;nodes (read-from-file-safely "tsmdata/eil51.tsm"
+ 		   nodes (read-from-file-safely "tsmdata/bier127.tsm")
+		   shortest-antopt-tour (antopt nodes)]
+		(shutdown-agents)
+		(println "Shortest Tour:" shortest-antopt-tour)))
