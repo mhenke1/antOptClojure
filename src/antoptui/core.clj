@@ -1,15 +1,8 @@
 (ns antoptui.core
-  (:use antopt.core seesaw.core seesaw.graphics)
+  (:use [antopt.core :exclude(-main)] seesaw.core seesaw.graphics)
   (:gen-class))
 
 (def nodes (atom []))
-
-(defn read-from-file-safely [filename]
-  (with-open
-      [r (java.io.PushbackReader.
-        (clojure.java.io/reader filename))]
-        (binding [*read-eval* false]
-          (read r))))
 
 (defn scaled-node-cordinates
   [node]
