@@ -49,7 +49,7 @@
 (defn initialize-all-connections 
 	"Inititialize the data of all connections between the given nodes"
 	[nodes] 
-	(let [all-connections (filter (fn [[x y]] (not= x y)) (cartesian-product (range (count nodes)) (range (count nodes))))]
+	(let [all-connections (filter #(not= (first %) (last %)) (cartesian-product (range (count nodes)) (range (count nodes))))]
 		(apply merge (map (fn [connection] {(vec connection) (create-connection-data connection nodes)}) all-connections))))
 
 (defn evaporate-one-connection 
