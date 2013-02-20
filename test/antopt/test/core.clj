@@ -13,29 +13,30 @@
     [48, 28], [56, 37], [30, 40]
 ])
 
-(def test-data {[2 1] {:distance 5.0, :weighted-distance 25.0, :tau 0.019983426066513734, :weighted-tau 0.019983426066513734, :probability 7.993370426605494E-4}, 
-	[1 2] {:distance 5.0, :weighted-distance 25.0, :tau 0.08945806419434195, :weighted-tau 0.08945806419434195, :probability 0.003578322567773678}, 
-	[1 0] {:distance 5.0, :weighted-distance 25.0, :tau 0.09253302650638885, :weighted-tau 0.09253302650638885, :probability 0.003701321060255554}, 
-	[0 1] {:distance 5.0, :weighted-distance 25.0, :tau 0.049126426838469066, :weighted-tau 0.049126426838469066, :probability 0.001965057073538763},
-	[0 2] {:distance 5.0, :weighted-distance 25.0, :tau 0.055126426838469066, :weighted-tau 0.05526426838469066, :probability 0.002365057073538763}})
+(def test-data {
+    [2 1] {:distance 5, :weighted-distance 25.0, :tau 0.019983426066513734, :weighted-tau 0.019983426066513734, :probability 7.993370426605494E-4}, 
+	[1 2] {:distance 5, :weighted-distance 25.0, :tau 0.08945806419434195, :weighted-tau 0.08945806419434195, :probability 0.003578322567773678}, 
+	[1 0] {:distance 5, :weighted-distance 25.0, :tau 0.09253302650638885, :weighted-tau 0.09253302650638885, :probability 0.003701321060255554}, 
+	[0 1] {:distance 5, :weighted-distance 25.0, :tau 0.049126426838469066, :weighted-tau 0.049126426838469066, :probability 0.001965057073538763},
+	[0 2] {:distance 5, :weighted-distance 25.0, :tau 0.055126426838469066, :weighted-tau 0.05526426838469066, :probability 0.002365057073538763}})
  
 (deftest test-euclidian-distance
 	(is (= 0.0 (euclidian-distance [0 0] [0 0])))
 	(is (= 5.0 (euclidian-distance [0 0] [4 3]))))
 
 (deftest test-length-of-connection 
-	(is (= 0.0 (length-of-connection  [0 1] [[0 0] [0 0]])))
-	(is (= 5.0 (length-of-connection  [0 1] [[0 0] [4 3]])))
-    (is (= 0.0 (length-of-connection  [1 1] [[0 0] [4 3]]))))
+	(is (= 0 (length-of-connection  [0 1] [[0 0] [0 0]])))
+	(is (= 5 (length-of-connection  [0 1] [[0 0] [4 3]])))
+    (is (= 0 (length-of-connection  [1 1] [[0 0] [4 3]]))))
 
 (deftest test-length-of-tour
-	(is (= 0 (length-of-tour [0] [0 0])))
-	(is (= 10.0 (length-of-tour [0 1 0] [[0 0] [4 3]])))
-	(is (= 10.0 (length-of-tour [0 2 1 0] [[0 0] [0 0] [4 3]]))))
+	(is (= nil (length-of-tour test-data [0 0])))
+	(is (= 10 (length-of-tour test-data [0 1 0])))
+	(is (= 15 (length-of-tour test-data [0 2 1 0]))))
 
 (deftest test-create-connection-data 
 	(let [test-info (create-connection-data [0 1] [[0 0] [4 3]])]
-		(is (= 5.0 (:distance test-info)))
+		(is (= 5 (:distance test-info)))
 		(is (= 25.0 (:weighted-distance test-info)))
 		(is (> 0.1 (:tau test-info))))) 
 
@@ -43,8 +44,8 @@
 	(let [connections (initialize-all-connections [[0 0] [4 3]])
 		test-info1 (connections [0 1])
         test-info2 (connections [1 0])]
-        (is (= 5.0 (:distance test-info1)))
-        (is (= 5.0 (:distance test-info2)))
+        (is (= 5 (:distance test-info1)))
+        (is (= 5 (:distance test-info2)))
         (is (= 25.0 (:weighted-distance test-info1)))
         (is (= 25.0 (:weighted-distance test-info2)))
         (is (= (:distance test-info1) (:distance test-info2)))
