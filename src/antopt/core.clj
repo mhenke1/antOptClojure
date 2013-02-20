@@ -24,17 +24,17 @@
 		(Math/sqrt (+ (Math/pow (- x2 x1) 2) (Math/pow (- y2 y1) 2)))))
 
 (defn length-of-connection 
-	"Calculates euclidian distance between two given nodes"
+	"Calculates euclidian distance between two given nodes and rounds it to the nearest integer to match tsplib results"
 	[connection nodes] 
 	(let [[node-id1 node-id2] connection]
-		(if (= node-id1 node-id2) 0.0
-			(euclidian-distance (nodes node-id1) (nodes node-id2)))))
+		(if (= node-id1 node-id2) 0
+			(Math/round (euclidian-distance (nodes node-id1) (nodes node-id2))))))
     
 (defn length-of-tour
 	"Calculates the total length of a given tour"
-	[tour nodes] 
+	[connection-data tour] 
     (let [connections-in-tour (partition 2  1 tour)]
-    	 (apply + (map #(length-of-connection  % nodes) connections-in-tour))))	
+    	  (apply + (map #(:distance (connection-data %)) connections-in-tour))))	
 
 (defn create-connection-data 
 	"Inititialize all data for a connection between two nodes"
@@ -69,9 +69,9 @@
 
 (defn adjust-pheromone-for-one-connection
 	"Amplifies pehoromone a connection walked by an ant"
-	[length-of-tour connection-data connection-id]
+	[tour-length connection-data connection-id]
 	(let [{:keys [distance weighted-distance tau]} (connection-data connection-id)
-		new-tau (+ tau (/ 1 length-of-tour))
+		new-tau (+ tau (/ 1 tour-length))
 		new-weighted-tau (Math/pow new-tau alpha)
 		new-probability (/ new-weighted-tau weighted-distance)
 		new-connection-data (assoc connection-data connection-id 
@@ -81,9 +81,9 @@
 (defn adjust-pheromone-for-tour
 	"Amplifies pehoromone a tour walked by an ant"
 	[connection-data tour-with-length]
-	(let [[length-of-tour tour] tour-with-length
+	(let [[tour-length tour] tour-with-length
 		connections-in-tour (partition 2  1 tour)
-		adjusted-connection-data (reduce (partial adjust-pheromone-for-one-connection length-of-tour) connection-data connections-in-tour)]
+		adjusted-connection-data (reduce (partial adjust-pheromone-for-one-connection tour-length) connection-data connections-in-tour)]
 	adjusted-connection-data)) 
 			
 (defn adjust-pheromone-for-multiple-tours
@@ -109,9 +109,8 @@
 				(let [next-node (choose-next-node-on-tour connection-data (peek tour) remaining-nodes)
  					new-remaining-nodes (remove #(= % next-node) remaining-nodes)]
 -					(recur (conj tour next-node) new-remaining-nodes))
-				[(length-of-tour (conj tour 0) nodes) (conj tour 0)]))))
+				[(length-of-tour connection-data (conj tour 0)) (conj tour 0)]))))
 				
-
 (defn one-generation-ant-tours
 	"Computes tours passing all given nodes concurrently for a given number of ants"
 	[connection-data number-of-ants nodes]
