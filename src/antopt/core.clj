@@ -50,7 +50,7 @@
 	"Inititialize the data of all connections between the given nodes"
 	[nodes] 
 	(let [all-connections (filter #(not= (first %) (last %)) (cartesian-product (range (count nodes)) (range (count nodes))))]
-		(apply merge (map (fn [connection] {(vec connection) (create-connection-data connection nodes)}) all-connections))))
+		(zipmap all-connections (map #(create-connection-data % nodes) all-connections))))
 
 (defn evaporate-one-connection 
 	"Evaporates pheromone on a connection between two nodes"
