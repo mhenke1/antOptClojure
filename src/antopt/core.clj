@@ -76,15 +76,14 @@
 		new-probability (/ new-weighted-tau weighted-distance)
 		new-connection-data (assoc connection-data connection-id 
 			{:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability})]
-	new-connection-data))
+		new-connection-data))
 
 (defn adjust-pheromone-for-tour
 	"Amplifies pehoromone a tour walked by an ant"
 	[connection-data tour-with-length]
 	(let [[tour-length tour] tour-with-length
-		connections-in-tour (partition 2  1 tour)
-		adjusted-connection-data (reduce (partial adjust-pheromone-for-one-connection tour-length) connection-data connections-in-tour)]
-	adjusted-connection-data)) 
+		connections-in-tour (partition 2  1 tour)]
+		(reduce (partial adjust-pheromone-for-one-connection tour-length) connection-data connections-in-tour)))
 			
 (defn adjust-pheromone-for-multiple-tours
         "Amplifies pehoromone a tour walked by a generation of ants"
