@@ -55,17 +55,17 @@
 (defn evaporate-one-connection 
 	"Evaporates pheromone on a connection between two nodes"
 	[connection-data] 
-	(let [[connection-id one-connection-data] connection-data
+	(let [[_ one-connection-data] connection-data
 		{:keys [distance weighted-distance tau]} one-connection-data
 		new-tau (* tau (- 1 rho))
 		new-weighted-tau (Math/pow new-tau alpha)
 		new-probability (/ new-weighted-tau weighted-distance)]
-		{connection-id {:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability}}))
+		{:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability}))
 
 (defn evaporate-all-connections
 	"Evaporates pheromone on all connections between two nodes"
 	[connection-data]
-  	(apply merge (map #(evaporate-one-connection %) connection-data)))
+	(zipmap (map #(first %) connection-data) (map #(evaporate-one-connection %) connection-data)))
 
 (defn adjust-pheromone-for-one-connection
 	"Amplifies pehoromone a connection walked by an ant"
