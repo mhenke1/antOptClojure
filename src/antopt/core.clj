@@ -120,16 +120,15 @@
 (defn antopt
 	"Computes the shortest tour through a number of given nodes using ant colony optimization"
 	[nodes]
-	(let [connection-data (initialize-all-connections nodes)]
-		(loop [number-of-generations number-of-generations connection-data connection-data]
-			(when (> number-of-generations 0) 
-				(let [{:keys [new-connection-data generation-shortest-tour]} (one-generation-ant-tours connection-data number-of-ants nodes)]
-					(println number-of-generations) 
-					(when (< (first generation-shortest-tour) (first @shortest-tour))
-						(reset! shortest-tour generation-shortest-tour)
-						(println @shortest-tour))
-					(recur (- number-of-generations 1) new-connection-data))))
-		@shortest-tour))
+	(loop [number-of-generations number-of-generations actual-connection-data (initialize-all-connections nodes)]
+		(when (> number-of-generations 0) 
+			(let [{:keys [new-connection-data generation-shortest-tour]} (one-generation-ant-tours actual-connection-data number-of-ants nodes)]
+				(println number-of-generations) 
+				(when (< (first generation-shortest-tour) (first @shortest-tour))
+					(reset! shortest-tour generation-shortest-tour)
+					(println @shortest-tour))
+				(recur (- number-of-generations 1) new-connection-data))))
+	@shortest-tour)
 
 (defn -main [& args]
 	"Main function to test the optimization"
