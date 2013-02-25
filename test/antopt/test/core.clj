@@ -53,7 +53,7 @@
 
 (deftest test-evaporate-one-connection 
     (let [test-connection (test-data [0 1])
-         test-evap (evaporate-one-connection [[0 1] test-connection])]
+         test-evap (evaporate-one-connection test-connection)]
         (is (= (:distance test-evap) (:distance test-connection)))
         (is (< (:tau test-evap) (:tau test-connection)))
         (is (< (:weighted-tau test-evap) (:weighted-tau test-connection)))
