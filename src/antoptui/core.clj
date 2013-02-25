@@ -59,9 +59,9 @@
 
 (defn -main [& args]
   "Main function to test the optimization"
-  ;(reset! nodes (read-from-file-safely "tsmdata/belgiumtour.tsm"))
-  ;(reset! nodes (read-from-file-safely "tsmdata/xqf131.tsm"))
-  (reset! nodes (read-from-file-safely "tsmdata/eil51.tsm"))
+  ;(reset! nodes (read-edn-from-file-safely "tsmdata/belgiumtour.tsm"))
+  ;(reset! nodes (read-edn-from-file-safely "tsmdata/xqf131.tsm"))
+  (reset! nodes (read-edn-from-file-safely "tsmdata/eil51.tsm"))
   (native!)
   (make-frame @nodes)
   (let [shortest-antopt-tour (antopt @nodes)]

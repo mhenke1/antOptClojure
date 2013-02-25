@@ -1,5 +1,6 @@
 (ns antopt.core
-  (:use [clojure.math.combinatorics :only (cartesian-product)])
+  (:refer-clojure :exclude [read])
+  (:use [clojure.math.combinatorics :only (cartesian-product)] [clojure.tools.reader.edn :only (read)])
   (:gen-class))
   
 (def alpha 1)
@@ -10,12 +11,11 @@
 
 (def shortest-tour (atom [Long/MAX_VALUE []]))
 
-(defn read-from-file-safely [filename]
+(defn read-edn-from-file-safely [filename]
   (with-open
       [r (java.io.PushbackReader.
         (clojure.java.io/reader filename))]
-        (binding [*read-eval* false]
-          (read r))))
+          (read r)))
 
 (defn euclidian-distance 
 	"Calculates euclidian distance between two given points"
@@ -131,10 +131,10 @@
 
 (defn -main [& args]
 	"Main function to test the optimization"
-	(let [ ;nodes (read-from-file-safely "tsmdata/belgiumtour.tsm")
- 		   ;nodes (read-from-file-safely "tsmdata/xqf131.tsm")
- 		   ;nodes (read-from-file-safely "tsmdata/eil51.tsm"
- 		   nodes (read-from-file-safely "tsmdata/bier127.tsm")
+	(let [ ;nodes (read-edn-from-file-safely "tsmdata/belgiumtour.tsm")
+ 		   ;nodes (read-edn-from-file-safely "tsmdata/xqf131.tsm")
+ 		   ;nodes (read-edn-from-file-safely "tsmdata/eil51.tsm"
+ 		   nodes (read-edn-from-file-safely "tsmdata/bier127.tsm")
 		   shortest-antopt-tour (antopt nodes)]
 		(shutdown-agents)
 		(println "Shortest Tour:" shortest-antopt-tour)))
