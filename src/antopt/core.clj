@@ -110,23 +110,19 @@
 				
 (defn one-generation-ant-tours
 	"Computes tours passing all given nodes concurrently for a given number of ants"
-	[connection-data number-of-ants nodes]
+	[number-of-ants nodes connection-data generation]
 	(let [tour-list (pmap (fn [ant] (walk-ant-tour connection-data nodes)) (range number-of-ants))
-		shortest-tour (apply min-key first tour-list)
+		generation-shortest-tour (apply min-key first tour-list)
 		new-connection-data (-> connection-data (adjust-pheromone-for-multiple-tours tour-list) (evaporate-all-connections))]
-		{:new-connection-data new-connection-data :generation-shortest-tour shortest-tour}))
+		(when (< (first generation-shortest-tour) (first @shortest-tour))
+					(reset! shortest-tour generation-shortest-tour)
+					(println "Generation:" generation " Length:" (first @shortest-tour)))
+		new-connection-data))
 
 (defn antopt
 	"Computes the shortest tour through a number of given nodes using ant colony optimization"
 	[nodes]
-	(loop [number-of-generations number-of-generations actual-connection-data (initialize-all-connections nodes)]
-		(when (> number-of-generations 0) 
-			(let [{:keys [new-connection-data generation-shortest-tour]} (one-generation-ant-tours actual-connection-data number-of-ants nodes)]
-				(println number-of-generations) 
-				(when (< (first generation-shortest-tour) (first @shortest-tour))
-					(reset! shortest-tour generation-shortest-tour)
-					(println @shortest-tour))
-				(recur (- number-of-generations 1) new-connection-data))))
+	(reduce (partial one-generation-ant-tours number-of-ants nodes) (initialize-all-connections nodes) (range 1 number-of-generations))
 	@shortest-tour)
 
 (defn -main [& args]
