@@ -127,7 +127,6 @@
 
 (deftest test-walk-ant-tour
     (let [[ant-length-of-tour tour] (walk-ant-tour (initialize-all-connections nodes) nodes)]
-;       (println ant-length-of-tour ":" tour)
         (is (= (count tour) (+ 1 (count nodes))))
         (is (= (count tour) (+ 1 (count (set tour)))))
         (is (some #{0} tour))
@@ -136,6 +135,5 @@
         (is (= 0 (first tour)))))
 
 (deftest test-one-generation-ant-tours 
-        (let [foo (one-generation-ant-tours (initialize-all-connections nodes) 5 nodes)]
+        (let [foo (one-generation-ant-tours 5 nodes (initialize-all-connections nodes) 1)]
         (is (= 1 1))))
-
