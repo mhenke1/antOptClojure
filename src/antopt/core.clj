@@ -84,9 +84,9 @@
 		(reduce (partial adjust-pheromone-for-one-connection tour-length) connection-data (partition 2  1 tour))))
 			
 (defn adjust-pheromone-for-multiple-tours
-        "Amplifies pehoromone a tour walked by a generation of ants"
-        [connection-data tours-with-length]
-        (reduce adjust-pheromone-for-tour connection-data tours-with-length))
+    "Amplifies pehoromone a tour walked by a generation of ants"
+    [connection-data tours-with-length]
+    (reduce adjust-pheromone-for-tour connection-data tours-with-length))
 
 (defn choose-next-node-on-tour 
 	"Chooses the next node to walk based on the given pheromone data"
@@ -114,23 +114,21 @@
 	(let [tour-list (pmap (fn [ant] (walk-ant-tour connection-data nodes)) (range number-of-ants))
 		generation-shortest-tour (apply min-key first tour-list)
 		new-connection-data (-> connection-data (adjust-pheromone-for-multiple-tours tour-list) (evaporate-all-connections))]
-		(when (< (first generation-shortest-tour) (first @shortest-tour))
-					(reset! shortest-tour generation-shortest-tour)
-					(println "Generation:" generation " Length:" (first @shortest-tour)))
+		(if (< (first generation-shortest-tour) (first @shortest-tour))
+			(do (println "Generation:" generation " Length:" (first generation-shortest-tour))
+				(reset! shortest-tour generation-shortest-tour))
+			(println "Generation:" generation))				
 		new-connection-data))
 
 (defn antopt
 	"Computes the shortest tour through a number of given nodes using ant colony optimization"
 	[nodes]
-	(reduce (partial one-generation-ant-tours number-of-ants nodes) (initialize-all-connections nodes) (range 1 number-of-generations))
+	(reduce (partial one-generation-ant-tours number-of-ants nodes) (initialize-all-connections nodes) (range 1 (+ 1 number-of-generations)))
 	@shortest-tour)
 
 (defn -main [& args]
 	"Main function to test the optimization"
-	(let [ ;nodes (read-edn-from-file-safely "tsmdata/belgiumtour.tsm")
- 		   ;nodes (read-edn-from-file-safely "tsmdata/xqf131.tsm")
- 		   ;nodes (read-edn-from-file-safely "tsmdata/eil51.tsm"
- 		   nodes (read-edn-from-file-safely "tsmdata/bier127.tsm")
+	(let [ nodes (read-edn-from-file-safely "tsmdata/bier127.tsm")
 		   shortest-antopt-tour (antopt nodes)]
 		(shutdown-agents)
 		(println "Shortest Tour:" shortest-antopt-tour)))
