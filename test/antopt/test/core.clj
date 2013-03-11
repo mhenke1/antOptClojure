@@ -125,13 +125,9 @@
     (let [next-node1 (choose-next-node-on-tour test-data 0 [1 2])]
         (is (some #{next-node1} [1 2]))))
 
-(deftest test-add-next-node-to-tour
-    (let [[tour remaining-nodes] (add-next-node-to-tour test-data [0] [1 2] 1)
-        next-node (peek tour)]
-        (is (some #{next-node} [1 2]))))
 
 (deftest test-add-next-node-to-tour
-    (let [tour-and-new-remaining-nodes (add-next-node-to-tour test-data [[0] [1 2]] [1 2])
+    (let [tour-and-new-remaining-nodes (add-next-node-to-tour test-data [[0] [1 2]])
         [tour remaining-nodes] tour-and-new-remaining-nodes
         next-node (peek tour)]
         (is (some #{next-node} [1 2]))

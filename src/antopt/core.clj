@@ -99,7 +99,7 @@
 
 (defn add-next-node-to-tour
 	"Returns a tour with another node addes based on the given pheromone data and a list of the remaining nodes"
-	[connection-data tour-with-remaining-nodes _]
+	[connection-data tour-with-remaining-nodes]
 	(let [[tour remaining-nodes] tour-with-remaining-nodes
 		current-node (peek tour)
 		next-node (choose-next-node-on-tour connection-data current-node remaining-nodes)]
@@ -109,13 +109,13 @@
 	"Computes a tour passing all given nodes"
 	[connection-data nodes]
 	(let [nodes-list (range 1 (count nodes))
-		 [tour _] (reduce (partial add-next-node-to-tour connection-data) [[0] nodes-list] nodes-list)]
+		 [tour _] (last (take (count nodes) (iterate (partial add-next-node-to-tour connection-data) [[0] nodes-list])))]
 		 [(length-of-tour connection-data (conj tour 0)) (conj tour 0)]))
 		 
 (defn one-generation-ant-tours
 	"Computes tours passing all given nodes concurrently for a given number of ants"
 	[number-of-ants nodes connection-data generation]
-	(let [tour-list (pmap (fn [ant] (walk-ant-tour connection-data nodes)) (range number-of-ants))
+	(let [tour-list (map (fn [ant] (walk-ant-tour connection-data nodes)) (range number-of-ants))
 		generation-shortest-tour (apply min-key first tour-list)
 		new-connection-data (-> connection-data (adjust-pheromone-for-multiple-tours tour-list) (evaporate-all-connections))]
 		(if (< (first generation-shortest-tour) (first @shortest-tour))
