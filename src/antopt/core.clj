@@ -89,25 +89,29 @@
     (reduce adjust-pheromone-for-tour connection-data tours-with-length))
 
 (defn choose-next-node-on-tour 
-	"Chooses the next node to walk based on the given pheromone data"
-	[connection-data current-node remaining-nodes]
-	(let [current-node-list (vec (repeat (count remaining-nodes) current-node))
-		connections (vec (map vector current-node-list remaining-nodes))
-		added-connection-probabilities (reductions + (map #(:probability (connection-data %)) connections))
-		limit (* (rand) (last added-connection-probabilities))]
-		(nth remaining-nodes (count (filter #(< % limit) added-connection-probabilities)))))
+    "Chooses the next node to walk based on the given pheromone data"
+    [connection-data current-node remaining-nodes]
+    (let [current-node-list (vec (repeat (count remaining-nodes) current-node))
+    	connections (vec (map vector current-node-list remaining-nodes))
+      	added-connection-probabilities (reductions + (map #(:probability (connection-data %)) connections))
+       	limit (* (rand) (last added-connection-probabilities))]
+      	(nth remaining-nodes (count (filter #(< % limit) added-connection-probabilities)))))
+
+(defn add-next-node-to-tour
+	"Returns a tour with another node addes based on the given pheromone data and a list of the remaining nodes"
+	[connection-data tour-with-remaining-nodes _]
+	(let [[tour remaining-nodes] tour-with-remaining-nodes
+		current-node (peek tour)
+		next-node (choose-next-node-on-tour connection-data current-node remaining-nodes)]
+		[(conj tour next-node) (remove #(= % next-node) remaining-nodes)]))
 
 (defn walk-ant-tour
 	"Computes a tour passing all given nodes"
 	[connection-data nodes]
-	(let [nodes-list (range 1 (count nodes))]
-		(loop [tour [0] remaining-nodes nodes-list]
-			(if  (seq remaining-nodes)
-				(let [next-node (choose-next-node-on-tour connection-data (peek tour) remaining-nodes)
- 					new-remaining-nodes (remove #(= % next-node) remaining-nodes)]
--					(recur (conj tour next-node) new-remaining-nodes))
-				[(length-of-tour connection-data (conj tour 0)) (conj tour 0)]))))
-				
+	(let [nodes-list (range 1 (count nodes))
+		 [tour _] (reduce (partial add-next-node-to-tour connection-data) [[0] nodes-list] nodes-list)]
+		 [(length-of-tour connection-data (conj tour 0)) (conj tour 0)]))
+		 
 (defn one-generation-ant-tours
 	"Computes tours passing all given nodes concurrently for a given number of ants"
 	[number-of-ants nodes connection-data generation]
