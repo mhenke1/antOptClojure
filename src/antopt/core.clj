@@ -109,7 +109,7 @@
 	"Computes a tour passing all given nodes"
 	[connection-data nodes]
 	(let [nodes-list (range 1 (count nodes))
-		 [tour _] (last (take (count nodes) (iterate (partial add-next-node-to-tour connection-data) [[0] nodes-list])))]
+		 [tour _] (nth (iterate (partial add-next-node-to-tour connection-data) [[0] nodes-list]) (- (count nodes) 1))]
 		 [(length-of-tour connection-data (conj tour 0)) (conj tour 0)]))
 		 
 (defn one-generation-ant-tours
