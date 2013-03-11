@@ -115,7 +115,7 @@
 (defn one-generation-ant-tours
 	"Computes tours passing all given nodes concurrently for a given number of ants"
 	[number-of-ants nodes connection-data generation]
-	(let [tour-list (map (fn [ant] (walk-ant-tour connection-data nodes)) (range number-of-ants))
+	(let [tour-list (pmap (fn [ant] (walk-ant-tour connection-data nodes)) (range number-of-ants))
 		generation-shortest-tour (apply min-key first tour-list)
 		new-connection-data (-> connection-data (adjust-pheromone-for-multiple-tours tour-list) (evaporate-all-connections))]
 		(if (< (first generation-shortest-tour) (first @shortest-tour))
