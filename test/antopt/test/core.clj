@@ -88,7 +88,7 @@
         (is (> (:probability test-evap) (:probability test-connection)))))
 
 (deftest test-adjust-pheromone-for-tour
-    (let [evap-data (adjust-pheromone-for-tour test-data [10 [0 1 2]])
+    (let [evap-data (adjust-pheromone-for-tour test-data {:tour-length 10 :tour [0 1 2]})
         test-connection1 (test-data [0 1])
         test-connection2 (test-data [1 2])
         test-evap1 (evap-data [0 1])
@@ -105,7 +105,7 @@
         (is (> (:probability test-evap2) (:probability test-connection2)))))
 
 (deftest test-adjust-pheromone-for-multiple-tours
-    (let [evap-data (adjust-pheromone-for-multiple-tours test-data [[10 [0 1 2]] [5 [2 1 0]]])
+    (let [evap-data (adjust-pheromone-for-multiple-tours test-data [{:tour-length 10 :tour [0 1 2]} {:tour-length 5 :tour [2 1 0]}])
         test-connection1 (test-data [0 1])
         test-connection2 (test-data [1 2])
         test-evap1 (evap-data [0 1])
@@ -127,20 +127,21 @@
 
 
 (deftest test-add-next-node-to-tour
-    (let [tour-and-new-remaining-nodes (add-next-node-to-tour test-data [[0] [1 2]])
-        [tour remaining-nodes] tour-and-new-remaining-nodes
+    (let [tour-and-new-remaining-nodes (add-next-node-to-tour test-data {:tour[0] :remaining-nodes [1 2]})
+        {:keys [tour remaining-nodes]} tour-and-new-remaining-nodes
         next-node (peek tour)]
         (is (some #{next-node} [1 2]))
         (is (complement (some #{next-node} remaining-nodes)))))
 
 (deftest test-walk-ant-tour
-    (let [[ant-length-of-tour tour] (walk-ant-tour (initialize-all-connections nodes) nodes)]
+    (let [{:keys [tour-length tour]} (walk-ant-tour (initialize-all-connections nodes) nodes)]
         (is (= (count tour) (+ 1 (count nodes))))
         (is (= (count tour) (+ 1 (count (set tour)))))
         (is (some #{0} tour))
         (is (some #{1} tour))
         (is (some #{2} tour))
-        (is (= 0 (first tour)))))
+        (is (= 0 (first tour))
+        (is (> tour-length 0)))))
 
 (deftest test-one-generation-ant-tours 
         (let [foo (one-generation-ant-tours 5 nodes (initialize-all-connections nodes) 1)]
