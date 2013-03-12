@@ -28,8 +28,8 @@
   (do (draw g (line correctedx1 correctedy1 correctedx2 correctedy2) line-style))))
 
 (defn paint-tour
-  [c g tour nodes]
-  (let [connections-in-tour (partition 2  1 (last tour))]
+  [c g shortest-tour nodes]
+  (let [connections-in-tour (partition 2  1 (shortest-tour :tour))]
     (doseq [connection connections-in-tour] (paint-connection c g connection nodes))))
 
 (defn paint

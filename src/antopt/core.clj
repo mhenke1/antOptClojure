@@ -9,7 +9,7 @@
 (def number-of-ants 500)
 (def number-of-generations 125)
 
-(def shortest-tour (atom [Long/MAX_VALUE []]))
+(def shortest-tour (atom {:tour-length Long/MAX_VALUE :tour []}))
 
 (defn read-edn-from-file-safely [filename]
   (with-open
@@ -80,7 +80,7 @@
 (defn adjust-pheromone-for-tour
 	"Amplifies pehoromone a tour walked by an ant"
 	[connection-data tour-with-length]
-	(let [[tour-length tour] tour-with-length]
+	(let [{:keys [tour-length tour]} tour-with-length]
 		(reduce (partial adjust-pheromone-for-one-connection tour-length) connection-data (partition 2  1 tour))))
 			
 (defn adjust-pheromone-for-multiple-tours
@@ -100,24 +100,25 @@
 (defn add-next-node-to-tour
 	"Returns a tour with another node addes based on the given pheromone data and a list of the remaining nodes"
 	[connection-data tour-with-remaining-nodes]
-	(let [[tour remaining-nodes] tour-with-remaining-nodes
+	(let [{:keys [tour remaining-nodes]} tour-with-remaining-nodes
 		next-node (choose-next-node-on-tour connection-data (peek tour) remaining-nodes)]
-		[(conj tour next-node) (remove #(= % next-node) remaining-nodes)]))
+		{:tour (conj tour next-node) :remaining-nodes (remove #(= % next-node) remaining-nodes)}))
 
 (defn walk-ant-tour
 	"Computes a tour passing all given nodes"
 	[connection-data nodes]
-	(let [[tour _] (nth (iterate (partial add-next-node-to-tour connection-data) [[0] (range 1 (count nodes))]) (- (count nodes) 1))]
-		 [(length-of-tour connection-data (conj tour 0)) (conj tour 0)]))
+	(let [tour-rem (last (take (count nodes) (iterate (partial add-next-node-to-tour connection-data) {:tour [0] :remaining-nodes (range 1 (count nodes))})))
+		  tour (tour-rem :tour)]
+		 {:tour-length (length-of-tour connection-data (conj tour 0)) :tour (conj tour 0)}))
 		 
 (defn one-generation-ant-tours
 	"Computes tours passing all given nodes concurrently for a given number of ants"
 	[number-of-ants nodes connection-data generation]
 	(let [tour-list (pmap (fn [ant] (walk-ant-tour connection-data nodes)) (range number-of-ants))
-		generation-shortest-tour (apply min-key first tour-list)
+		generation-shortest-tour (apply min-key #(% :tour-length) tour-list)
 		new-connection-data (-> connection-data (adjust-pheromone-for-multiple-tours tour-list) (evaporate-all-connections))]
-		(if (< (first generation-shortest-tour) (first @shortest-tour))
-			(do (println "Generation:" generation " Length:" (first generation-shortest-tour))
+		(if (< (generation-shortest-tour :tour-length) (@shortest-tour :tour-length))
+			(do (println "Generation:" generation " Length:" (generation-shortest-tour :tour-length))
 				(reset! shortest-tour generation-shortest-tour))
 			(println "Generation:" generation))				
 		new-connection-data))
