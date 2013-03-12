@@ -1,6 +1,6 @@
 (ns antopt.core
   (:refer-clojure :exclude [read])
-  (:use [clojure.math.combinatorics :only (cartesian-product)] [clojure.tools.reader.edn :only (read)])
+  (:use [clojure.tools.reader.edn :only (read)])
   (:gen-class))
   
 (def alpha 1)
@@ -49,7 +49,7 @@
 (defn initialize-all-connections 
 	"Inititialize the data of all connections between the given nodes"
 	[nodes] 
-	(let [all-connections (filter #(not= (first %) (last %)) (cartesian-product (range (count nodes)) (range (count nodes))))]
+	(let [all-connections (for [x (range (count nodes)) y (range (count nodes)) :when (not= x y)] [x y])]
 		(zipmap all-connections (map #(create-connection-data % nodes) all-connections))))
 
 (defn evaporate-one-connection 
