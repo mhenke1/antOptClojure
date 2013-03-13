@@ -117,10 +117,11 @@
 	(let [tour-list (pmap (fn [ant] (walk-ant-tour connection-data nodes)) (range number-of-ants))
 		generation-shortest-tour (apply min-key #(% :tour-length) tour-list)
 		new-connection-data (-> connection-data (adjust-pheromone-for-multiple-tours tour-list) (evaporate-all-connections))]
-		(if (< (generation-shortest-tour :tour-length) (@shortest-tour :tour-length))
-			(do (println "Generation:" generation " Length:" (generation-shortest-tour :tour-length))
+		(print "Generation:" generation)
+		(when (< (generation-shortest-tour :tour-length) (@shortest-tour :tour-length))
+				(print " Length:" (generation-shortest-tour :tour-length))
 				(reset! shortest-tour generation-shortest-tour))
-			(println "Generation:" generation))				
+		(println "")		
 		new-connection-data))
 
 (defn antopt
