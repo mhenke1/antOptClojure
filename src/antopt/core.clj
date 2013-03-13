@@ -121,7 +121,7 @@
 		(when (< (generation-shortest-tour :tour-length) (@shortest-tour :tour-length))
 				(print " Length:" (generation-shortest-tour :tour-length))
 				(reset! shortest-tour generation-shortest-tour))
-		(println "")		
+		(println)		
 		new-connection-data))
 
 (defn antopt
