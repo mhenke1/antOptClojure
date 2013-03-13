@@ -135,4 +135,5 @@
 	(let [ nodes (read-edn-from-file-safely "tsmdata/bier127.tsm")
 		   shortest-antopt-tour (antopt nodes)]
 		(shutdown-agents)
-		(println "Shortest Tour:" shortest-antopt-tour)))
+		(println "Shortest Tour:" (shortest-antopt-tour :tour))
+		(println "Length:" (shortest-antopt-tour :tour-length))))
