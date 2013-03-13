@@ -66,4 +66,5 @@
   (make-frame @nodes)
   (let [shortest-antopt-tour (antopt @nodes)]
     (shutdown-agents)
-    (println "Shortest Tour:" shortest-antopt-tour)))
+    (println "Shortest Tour:" (shortest-antopt-tour :tour))
+    (println "Length:" (shortest-antopt-tour :tour-length))))
