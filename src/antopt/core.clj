@@ -107,7 +107,7 @@
 (defn walk-ant-tour
 	"Computes a tour passing all given nodes"
 	[connection-data nodes]
-	(let [tour-rem (last (take (count nodes) (iterate (partial add-next-node-to-tour connection-data) {:tour [0] :remaining-nodes (range 1 (count nodes))})))
+	(let [tour-rem (nth (iterate (partial add-next-node-to-tour connection-data) {:tour [0] :remaining-nodes (range 1 (count nodes))}) (- (count nodes) 1))
 		  tour (tour-rem :tour)]
 		 {:tour-length (length-of-tour connection-data (conj tour 0)) :tour (conj tour 0)}))
 		 
