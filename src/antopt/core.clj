@@ -12,10 +12,11 @@
 (def shortest-tour (atom {:tour-length Long/MAX_VALUE :tour []}))
 
 (defn read-edn-from-file-safely [filename]
-  (with-open
-      [r (java.io.PushbackReader.
-        (clojure.java.io/reader filename))]
-          (read r)))
+ 	"Read edn data from a file savely"
+  	(with-open
+      	[r (java.io.PushbackReader.
+        	(clojure.java.io/reader filename))]
+        (read r)))
 
 (defn euclidian-distance 
 	"Calculates euclidian distance between two given points"
