@@ -35,7 +35,8 @@
 	(is (= 15 (length-of-tour test-data [0 2 1 0]))))
 
 (deftest test-create-connection-data 
-	(let [test-info (create-connection-data [0 1] [[0 0] [4 3]])]
+	(let [test-connection-data (create-connection-data [0 1] [[0 0] [4 3]])
+        test-info (test-connection-data [0 1])]
 		(is (= 5 (:distance test-info)))
 		(is (= 25.0 (:weighted-distance test-info)))
 		(is (> 0.1 (:tau test-info))))) 
