@@ -32,8 +32,7 @@
 (defn length-of-tour
 	"Calculates the total length of a given tour"
 	[connection-data tour] 
-    (let [connections-in-tour (partition 2  1 tour)]
-    	  (apply + (map #(:distance (connection-data %)) connections-in-tour))))	
+    (apply + (map #(:distance (connection-data %)) (partition 2  1 tour))))	
 
 (defn create-connection-data 
 	"Inititialize all data for a connection between two nodes"
@@ -43,13 +42,12 @@
 		  tau (* (rand) 0.1)
 		  weighted-tau (Math/pow tau alpha)
 		  probability (/ weighted-tau weighted-distance)]
-		  {:distance distance :weighted-distance weighted-distance :tau tau :weighted-tau weighted-tau :probability probability}))
+		  {connection {:distance distance :weighted-distance weighted-distance :tau tau :weighted-tau weighted-tau :probability probability}}))
 
 (defn initialize-all-connections 
 	"Inititialize the data of all connections between the given nodes"
 	[node-data] 
-	(let [all-connections (for [x (range (count node-data)) y (range (count node-data)) :when (not= x y)] [x y])]
-		(zipmap all-connections (map #(create-connection-data % node-data) all-connections))))
+	(into {} (for [x (range (count node-data)) y (range (count node-data)) :when (not= x y)] (create-connection-data [x y] node-data))))
 
 (defn evaporate-one-connection 
 	"Evaporates pheromone on a connection between two nodes"
