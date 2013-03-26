@@ -134,7 +134,7 @@
     (is (complement (some #{next-node} remaining-nodes)))))
 
 (deftest test-walk-ant-tour
-  (let [{:keys [tour-length tour]} (walk-ant-tour (initialize-all-connections nodes) nodes)]
+  (let [{:keys [tour-length tour]} (walk-ant-tour (initialize-all-connections nodes) (count nodes))]
     (is (= (count tour) (+ 1 (count nodes))))
     (is (= (count tour) (+ 1 (count (set tour)))))
     (is (some #{0} tour))
@@ -144,5 +144,5 @@
         (is (> tour-length 0)))))
 
 (deftest test-one-generation-ant-tours 
-  (let [foo (one-generation-ant-tours 5 nodes (initialize-all-connections nodes) 1)]
+  (let [foo (one-generation-ant-tours 5 (count nodes) (initialize-all-connections nodes) 1)]
     (is (= 1 1))))
