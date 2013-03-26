@@ -1,6 +1,5 @@
 (ns antopt.core
-  (:refer-clojure :exclude [read])
-  (:use [clojure.tools.reader.edn :only (read)])
+  (:require clojure.edn)
   (:gen-class))
   
 (def alpha 1)
@@ -16,7 +15,7 @@
   	(with-open
       	[r (java.io.PushbackReader.
         	(clojure.java.io/reader filename))]
-        (read r)))
+        (clojure.edn/read r)))
 
 (defn euclidian-distance 
 	"Calculates euclidian distance between two given points"
