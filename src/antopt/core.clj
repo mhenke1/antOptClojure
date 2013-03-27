@@ -95,7 +95,7 @@
   "Returns a tour with another node addes based on the given pheromone data and a list of the remaining nodes"
   [connection-data {:keys [tour remaining-nodes]}]
   (let [next-node (choose-next-node-on-tour connection-data (peek tour) remaining-nodes)]
-    {:tour (conj tour next-node) :remaining-nodes (remove #(= % next-node) remaining-nodes)}))
+    {:tour (conj tour next-node) :remaining-nodes (remove (partial = next-node) remaining-nodes)}))
 
 (defn walk-ant-tour
   "Computes a tour passing all given nodes"
