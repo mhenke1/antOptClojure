@@ -5,9 +5,8 @@
 (def nodes (atom []))
 
 (defn scaled-node-cordinates
-  [node]
-  (let [[x y] node]
-    [(+ 10 (* x 5)) (+ 10 (* y 5))]))
+  [[x y]]
+  [(+ 10 (* x 5)) (+ 10 (* y 5))])
 
 (defn paint-node
   [c g node]
@@ -20,9 +19,8 @@
   (doseq [node nodes] (paint-node c g node)))
 
 (defn paint-connection
-  [c g connection nodes]
-  (let [[node-id1 node-id2] connection
-        [correctedx1 correctedy1] (scaled-node-cordinates (nodes node-id1))
+  [c g [node-id1 node-id2] nodes]
+  (let [[correctedx1 correctedy1] (scaled-node-cordinates (nodes node-id1))
         [correctedx2 correctedy2] (scaled-node-cordinates (nodes node-id2))
         line-style (style :foreground "#FF0000" :stroke 3 :cap :round)]
     (do (draw g (line correctedx1 correctedy1 correctedx2 correctedy2) line-style))))
