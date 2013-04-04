@@ -1,13 +1,13 @@
 # antopt
 
-FIXME: write description
+Traveling salesman using ant colony optimization
 
 ## Usage
 
-FIXME: write
+lein run
 
 ## License
 
-Copyright (C) 2012 FIXME
+Copyright (C) 2013 Martin Henke 
 
-Distributed under the Eclipse Public License, the same as Clojure.
+All rights reservered
