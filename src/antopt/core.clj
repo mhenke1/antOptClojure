@@ -38,7 +38,7 @@
   [connection node-data]
   (let [distance (length-of-connection connection node-data)
         weighted-distance (Math/pow distance beta) 
-        tau (* (rand) 0.1)
+        tau (rand 0.1)
         weighted-tau (Math/pow tau alpha)
         probability (/ weighted-tau weighted-distance)]
     {connection {:distance distance :weighted-distance weighted-distance :tau tau :weighted-tau weighted-tau :probability probability}}))
@@ -88,7 +88,7 @@
   (let [current-node-list (vec (repeat (count remaining-nodes) current-node))
         connections (vec (map vector current-node-list remaining-nodes))
         added-connection-probabilities (reductions + (map #(:probability (connection-data %)) connections))
-        limit (* (rand) (last added-connection-probabilities))]
+        limit (rand (last added-connection-probabilities))]
     (nth remaining-nodes (count (filter #(< % limit) added-connection-probabilities)))))
 
 (defn add-next-node-to-tour
