@@ -1,4 +1,4 @@
-(ns antoptui.core
+(ns antopt.antoptui
   (:use [antopt.core :exclude(-main)] seesaw.core seesaw.graphics)
   (:gen-class))
 
