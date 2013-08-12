@@ -10,6 +10,8 @@
 
 (def shortest-tour (atom {:tour-length Long/MAX_VALUE :tour []}))
 
+(defrecord Connection [distance weighted-distance tau weighted-tau probability])
+
 (defn read-edn-from-file-safely [filename]
   "Read edn data from a file savely"
   (with-open
@@ -41,7 +43,7 @@
         tau (rand 0.1)
         weighted-tau (Math/pow tau alpha)
         probability (/ weighted-tau weighted-distance)]
-    {connection {:distance distance :weighted-distance weighted-distance :tau tau :weighted-tau weighted-tau :probability probability}}))
+    {connection (->Connection distance weighted-distance tau weighted-tau probability)}))
 
 (defn initialize-all-connections 
   "Inititialize the data of all connections between the given nodes"
@@ -54,7 +56,7 @@
   (let [new-tau (* tau (- 1 rho))
         new-weighted-tau (Math/pow new-tau alpha)
         new-probability (/ new-weighted-tau weighted-distance)]
-    {:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability}))
+    (->Connection distance weighted-distance new-tau new-weighted-tau new-probability)))
 
 (defn evaporate-all-connections
   "Evaporates pheromone on all connections between two nodes"
@@ -69,7 +71,7 @@
         new-weighted-tau (Math/pow new-tau alpha)
         new-probability (/ new-weighted-tau weighted-distance)
         new-connection-data (assoc connection-data connection-id 
-                              {:distance distance :weighted-distance weighted-distance :tau new-tau :weighted-tau new-weighted-tau :probability new-probability})]
+                              (->Connection distance weighted-distance new-tau new-weighted-tau new-probability))]
     new-connection-data))
 
 (defn adjust-pheromone-for-tour
