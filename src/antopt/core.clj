@@ -10,7 +10,7 @@
 
 (def shortest-tour (atom {:tour-length Long/MAX_VALUE :tour []}))
 
-(defrecord Connection [distance weighted-distance tau weighted-tau probability])
+(defrecord Connection [distance tau probability])
 
 (defn read-edn-from-file-safely [filename]
   "Read edn data from a file savely"
@@ -43,7 +43,7 @@
         tau (rand 0.1)
         weighted-tau (Math/pow tau alpha)
         probability (/ weighted-tau weighted-distance)]
-    {connection (->Connection distance weighted-distance tau weighted-tau probability)}))
+    {connection (->Connection distance tau probability)}))
 
 (defn initialize-all-connections 
   "Inititialize the data of all connections between the given nodes"
@@ -52,11 +52,12 @@
 
 (defn evaporate-one-connection 
   "Evaporates pheromone on a connection between two nodes"
-  [{:keys [distance weighted-distance tau]}] 
+  [{:keys [distance tau]}] 
   (let [new-tau (* tau (- 1 rho))
-        new-weighted-tau (Math/pow new-tau alpha)
-        new-probability (/ new-weighted-tau weighted-distance)]
-    (->Connection distance weighted-distance new-tau new-weighted-tau new-probability)))
+        weighted-tau (Math/pow new-tau alpha)
+        weighted-distance  (Math/pow distance beta)
+        new-probability (/ weighted-tau weighted-distance)]
+    (->Connection distance new-tau new-probability)))
 
 (defn evaporate-all-connections
   "Evaporates pheromone on all connections between two nodes"
@@ -66,12 +67,13 @@
 (defn adjust-pheromone-for-one-connection
   "Amplifies pehoromone a connection walked by an ant"
   [tour-length connection-data connection-id]
-  (let [{:keys [distance weighted-distance tau]} (connection-data connection-id)
+  (let [{:keys [distance tau]} (connection-data connection-id)
         new-tau (+ tau (/ 1 tour-length))
-        new-weighted-tau (Math/pow new-tau alpha)
-        new-probability (/ new-weighted-tau weighted-distance)
+        weighted-tau (Math/pow new-tau alpha)
+        weighted-distance  (Math/pow distance beta)
+        new-probability (/ weighted-tau weighted-distance)
         new-connection-data (assoc connection-data connection-id 
-                              (->Connection distance weighted-distance new-tau new-weighted-tau new-probability))]
+                              (->Connection distance new-tau new-probability))]
     new-connection-data))
 
 (defn adjust-pheromone-for-tour

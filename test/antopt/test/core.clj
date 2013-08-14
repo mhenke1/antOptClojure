@@ -1,5 +1,6 @@
 (ns antopt.test.core
-  (:use antopt.core clojure.test))
+  (:use antopt.core clojure.test)
+  (:import [antopt.core Connection]))
 
 (def nodes [
             [37, 52], [49, 49], [52, 64], [20, 26], [40, 30], [21, 47],
@@ -14,11 +15,11 @@
             ])
 
 (def test-data {
-                [2 1] {:distance 5, :weighted-distance 25.0, :tau 0.019983426066513734, :weighted-tau 0.019983426066513734, :probability 7.993370426605494E-4}, 
-                [1 2] {:distance 5, :weighted-distance 25.0, :tau 0.08945806419434195, :weighted-tau 0.08945806419434195, :probability 0.003578322567773678}, 
-                [1 0] {:distance 5, :weighted-distance 25.0, :tau 0.09253302650638885, :weighted-tau 0.09253302650638885, :probability 0.003701321060255554}, 
-                [0 1] {:distance 5, :weighted-distance 25.0, :tau 0.049126426838469066, :weighted-tau 0.049126426838469066, :probability 0.001965057073538763},
-                [0 2] {:distance 5, :weighted-distance 25.0, :tau 0.055126426838469066, :weighted-tau 0.05526426838469066, :probability 0.002365057073538763}})
+                [2 1] (->Connection 5 0.019983426066513734 7.993370426605494E-4), 
+                [1 2] (->Connection 5 0.08945806419434195  0.003578322567773678), 
+                [1 0] (->Connection 5 0.09253302650638885  0.003701321060255554), 
+                [0 1] (->Connection 5 0.049126426838469066 0.00196505707353876),
+                [0 2] (->Connection 5 0.055126426838469066 0.002365057073538763)})
 
 (deftest test-euclidian-distance
   (is (= 0.0 (euclidian-distance [0 0] [0 0])))
@@ -38,7 +39,6 @@
   (let [test-connection-data (create-connection-data [0 1] [[0 0] [4 3]])
         test-info (test-connection-data [0 1])]
     (is (= 5 (:distance test-info)))
-    (is (= 25.0 (:weighted-distance test-info)))
     (is (> 0.1 (:tau test-info))))) 
 
 (deftest test-initialize-all-connections 
@@ -47,18 +47,13 @@
         test-info2 (connections [1 0])]
     (is (= 5 (:distance test-info1)))
     (is (= 5 (:distance test-info2)))
-    (is (= 25.0 (:weighted-distance test-info1)))
-    (is (= 25.0 (:weighted-distance test-info2)))
-    (is (= (:distance test-info1) (:distance test-info2)))
-    (is (= (:weighted-distance test-info1) (:weighted-distance test-info2)))))
+    (is (= (:distance test-info1) (:distance test-info2)))))
 
 (deftest test-evaporate-one-connection 
   (let [test-connection (test-data [0 1])
         test-evap (evaporate-one-connection test-connection)]
     (is (= (:distance test-evap) (:distance test-connection)))
     (is (< (:tau test-evap) (:tau test-connection)))
-    (is (< (:weighted-tau test-evap) (:weighted-tau test-connection)))
-    (is (= (:weighted-distance test-evap) (:weighted-distance test-connection)))
     (is (< (:probability test-evap) (:probability test-connection)))))
 
 (deftest test-evaporate-pheromone
@@ -69,13 +64,9 @@
         test-evap2 (test-evap-data [1 0])]
     (is (= (:distance test-evap1) (:distance test-connection1)))
     (is (< (:tau test-evap1) (:tau test-connection1)))
-    (is (< (:weighted-tau test-evap1) (:weighted-tau test-connection1)))
-    (is (= (:weighted-distance test-evap1) (:weighted-distance test-connection1)))
     (is (< (:probability test-evap1) (:probability test-connection1)))
     (is (= (:distance test-evap2) (:distance test-connection2)))
     (is (< (:tau test-evap2) (:tau test-connection2)))
-    (is (< (:weighted-tau test-evap2) (:weighted-tau test-connection2)))
-    (is (= (:weighted-distance test-evap2) (:weighted-distance test-connection2)))
     (is (< (:probability test-evap2) (:probability test-connection2)))))
 
 (deftest test-adjust-pheromone-for-one-connection
@@ -84,8 +75,6 @@
         test-evap (evap-data [0 1])]
     (is (= (:distance test-evap) (:distance test-connection)))
     (is (> (:tau test-evap) (:tau test-connection)))
-    (is (> (:weighted-tau test-evap) (:weighted-tau test-connection)))
-    (is (= (:weighted-distance test-evap) (:weighted-distance test-connection)))
     (is (> (:probability test-evap) (:probability test-connection)))))
 
 (deftest test-adjust-pheromone-for-tour
@@ -96,13 +85,9 @@
         test-evap2 (evap-data [1 2])]
     (is (= (:distance test-evap1) (:distance test-connection1)))
     (is (> (:tau test-evap1) (:tau test-connection1)))
-    (is (> (:weighted-tau test-evap1) (:weighted-tau test-connection1)))
-    (is (= (:weighted-distance test-evap1) (:weighted-distance test-connection1)))
     (is (> (:probability test-evap1) (:probability test-connection1)))
     (is (= (:distance test-evap2) (:distance test-connection2)))
     (is (> (:tau test-evap2) (:tau test-connection2)))
-    (is (> (:weighted-tau test-evap2) (:weighted-tau test-connection2)))
-    (is (= (:weighted-distance test-evap2) (:weighted-distance test-connection2)))
     (is (> (:probability test-evap2) (:probability test-connection2)))))
 
 (deftest test-adjust-pheromone-for-multiple-tours
@@ -113,13 +98,9 @@
         test-evap2 (evap-data [1 2])]
     (is (= (:distance test-evap1) (:distance test-connection1)))
     (is (> (:tau test-evap1) (:tau test-connection1)))
-    (is (> (:weighted-tau test-evap1) (:weighted-tau test-connection1)))
-    (is (= (:weighted-distance test-evap1) (:weighted-distance test-connection1)))
     (is (> (:probability test-evap1) (:probability test-connection1)))
     (is (= (:distance test-evap2) (:distance test-connection2)))
     (is (> (:tau test-evap2) (:tau test-connection2)))
-    (is (> (:weighted-tau test-evap2) (:weighted-tau test-connection2)))
-    (is (= (:weighted-distance test-evap2) (:weighted-distance test-connection2)))
     (is (> (:probability test-evap2) (:probability test-connection2)))))
 
 (deftest test-choose-next-node-on-tour
