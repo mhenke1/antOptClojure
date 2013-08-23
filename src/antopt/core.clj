@@ -19,16 +19,16 @@
          (clojure.java.io/reader filename))]
     (clojure.edn/read r)))
 
-(defn euclidian-distance 
-  "Calculates euclidian distance between two given points"
+(defn euclidean-distance 
+  "Calculates euclidean distance between two given points"
   [[x1 y1] [x2 y2]] 
   (Math/sqrt (+ (Math/pow (- x2 x1) 2) (Math/pow (- y2 y1) 2))))
 
 (defn length-of-connection 
-  "Calculates euclidian distance between two given nodes and rounds it to the nearest integer to match tsplib results"
+  "Calculates euclidean distance between two given nodes and rounds it to the nearest integer to match tsplib results"
   [[node-id1 node-id2] node-data] 
   (if (= node-id1 node-id2) 0
-    (Math/round (euclidian-distance (node-data node-id1) (node-data node-id2)))))
+    (Math/round (euclidean-distance (node-data node-id1) (node-data node-id2)))))
 
 (defn length-of-tour
   "Calculates the total length of a given tour"
