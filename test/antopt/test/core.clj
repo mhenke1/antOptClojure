@@ -21,9 +21,9 @@
                 [0 1] (->Connection 5 0.049126426838469066 0.00196505707353876),
                 [0 2] (->Connection 5 0.055126426838469066 0.002365057073538763)})
 
-(deftest test-euclidian-distance
-  (is (= 0.0 (euclidian-distance [0 0] [0 0])))
-  (is (= 5.0 (euclidian-distance [0 0] [4 3]))))
+(deftest test-euclidean-distance
+  (is (= 0.0 (euclidean-distance [0 0] [0 0])))
+  (is (= 5.0 (euclidean-distance [0 0] [4 3]))))
 
 (deftest test-length-of-connection 
   (is (= 0 (length-of-connection  [0 1] [[0 0] [0 0]])))
