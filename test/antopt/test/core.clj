@@ -1,6 +1,6 @@
 (ns antopt.test.core
   (:use antopt.core clojure.test)
-  (:import [antopt.core Connection]))
+  (:import [antopt.core ConnectionInfo]))
 
 (def nodes [
             [37, 52], [49, 49], [52, 64], [20, 26], [40, 30], [21, 47],
@@ -15,11 +15,13 @@
             ])
 
 (def test-data {
-                [2 1] (->Connection 5 0.019983426066513734 7.993370426605494E-4), 
-                [1 2] (->Connection 5 0.08945806419434195  0.003578322567773678), 
-                [1 0] (->Connection 5 0.09253302650638885  0.003701321060255554), 
-                [0 1] (->Connection 5 0.049126426838469066 0.00196505707353876),
-                [0 2] (->Connection 5 0.055126426838469066 0.002365057073538763)})
+                [2 1] (->ConnectionInfo 25 0.019983426066513734 7.993370426605494E-4), 
+                [1 2] (->ConnectionInfo 25 0.08945806419434195  0.003578322567773678), 
+                [1 0] (->ConnectionInfo 25 0.09253302650638885  0.003701321060255554), 
+                [0 1] (->ConnectionInfo 25 0.049126426838469066 0.00196505707353876),
+                [0 2] (->ConnectionInfo 25 0.055126426838469066 0.002365057073538763)})
+
+(def test-distance-data {[2 1] 5, [1 2] 5, [1 0] 5, [0 1] 5, [0 2] 5})
 
 (deftest test-euclidean-distance
   (is (= 0.0 (euclidean-distance [0 0] [0 0])))
@@ -31,28 +33,33 @@
   (is (= 0 (length-of-connection  [1 1] [[0 0] [4 3]]))))
 
 (deftest test-length-of-tour
-  (is (= nil (length-of-tour test-data [0 0])))
-  (is (= 10 (length-of-tour test-data [0 1 0])))
-  (is (= 15 (length-of-tour test-data [0 2 1 0]))))
+  (is (= nil (length-of-tour test-distance-data [0 0])))
+  (is (= 10 (length-of-tour test-distance-data [0 1 0])))
+  (is (= 15 (length-of-tour test-distance-data [0 2 1 0]))))
 
 (deftest test-create-connection-data 
-  (let [test-connection-data (create-connection-data [0 1] [[0 0] [4 3]])
+  (let [test-connection-data (create-connection-data [0 1] {[0 1] 5})
         test-info (test-connection-data [0 1])]
-    (is (= 5 (:distance test-info)))
+    (is (= 25.0 (:weighted-distance test-info)))
     (is (> 0.1 (:tau test-info))))) 
 
-(deftest test-initialize-all-connections 
-  (let [connections (initialize-all-connections [[0 0] [4 3]])
+(deftest test-initialize-connections 
+  (let [connections (initialize-connections [[0 0] [4 3]] (initialize-distances [[0 0] [4 3]]))
         test-info1 (connections [0 1])
         test-info2 (connections [1 0])]
-    (is (= 5 (:distance test-info1)))
-    (is (= 5 (:distance test-info2)))
-    (is (= (:distance test-info1) (:distance test-info2)))))
+    (is (> 0.1 (:tau test-info1)))
+    (is (> 0.1 (:tau test-info2)))))
+
+(deftest test-initialize-distances 
+  (let [distances (initialize-distances [[0 0] [4 3]])
+        test-info1 (distances [0 1])
+        test-info2 (distances [1 0])]
+    (is (= 5 test-info1))
+    (is (= 5 test-info2))))
 
 (deftest test-evaporate-one-connection 
   (let [test-connection (test-data [0 1])
         test-evap (evaporate-one-connection test-connection)]
-    (is (= (:distance test-evap) (:distance test-connection)))
     (is (< (:tau test-evap) (:tau test-connection)))
     (is (< (:probability test-evap) (:probability test-connection)))))
 
@@ -62,10 +69,8 @@
         test-evap1 (test-evap-data [0 1])
         test-connection2 (test-data [1 0])
         test-evap2 (test-evap-data [1 0])]
-    (is (= (:distance test-evap1) (:distance test-connection1)))
     (is (< (:tau test-evap1) (:tau test-connection1)))
     (is (< (:probability test-evap1) (:probability test-connection1)))
-    (is (= (:distance test-evap2) (:distance test-connection2)))
     (is (< (:tau test-evap2) (:tau test-connection2)))
     (is (< (:probability test-evap2) (:probability test-connection2)))))
 
@@ -115,7 +120,8 @@
     (is (complement (some #{next-node} remaining-nodes)))))
 
 (deftest test-walk-ant-tour
-  (let [{:keys [tour-length tour]} (walk-ant-tour (initialize-all-connections nodes) (count nodes))]
+  (let [distance-data (initialize-distances nodes)
+    {:keys [tour-length tour]} (walk-ant-tour distance-data (initialize-connections nodes distance-data) (count nodes))]
     (is (= (count tour) (+ 1 (count nodes))))
     (is (= (count tour) (+ 1 (count (set tour)))))
     (is (some #{0} tour))
@@ -125,5 +131,6 @@
         (is (> tour-length 0)))))
 
 (deftest test-one-generation-ant-tours 
-  (let [foo (one-generation-ant-tours 5 (count nodes) (initialize-all-connections nodes) 1)]
+  (let [distance-data (initialize-distances nodes)
+        foo (one-generation-ant-tours 5 (count nodes) distance-data (initialize-connections nodes distance-data) 1)]
     (is (= 1 1))))

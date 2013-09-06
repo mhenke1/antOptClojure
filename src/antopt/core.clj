@@ -10,7 +10,7 @@
 
 (def shortest-tour (atom {:tour-length Long/MAX_VALUE :tour []}))
 
-(defrecord Connection [distance tau probability])
+(defrecord ConnectionInfo [weighted-distance tau probability])
 
 (defn read-edn-from-file-safely [filename]
   "Read edn data from a file savely"
@@ -30,34 +30,41 @@
   (if (= node-id1 node-id2) 0
     (Math/round (euclidean-distance (node-data node-id1) (node-data node-id2)))))
 
-(defn length-of-tour
+(defn length-of-tour-internal
   "Calculates the total length of a given tour"
-  [connection-data tour] 
-  (apply + (map #(:distance (connection-data %)) (partition 2  1 tour)))) 
+  [distance-data tour] 
+  (apply + (map #(distance-data %) (partition 2  1 tour))))
 
+(def length-of-tour
+   (memoize length-of-tour-internal))
+  
 (defn create-connection-data 
   "Inititialize all data for a connection between two nodes"
-  [connection node-data]
-  (let [distance (length-of-connection connection node-data)
-        weighted-distance (Math/pow distance beta) 
+  [connection distance-data]
+  (let [distance (distance-data connection)
+        weighted-distance (Math/pow distance beta)
         tau (rand 0.1)
         weighted-tau (Math/pow tau alpha)
         probability (/ weighted-tau weighted-distance)]
-    {connection (->Connection distance tau probability)}))
+    {connection (->ConnectionInfo weighted-distance tau probability)}))
 
-(defn initialize-all-connections 
+(defn initialize-connections 
+  "Inititialize the data of all connections between the given nodes"
+  [node-data distance-data] 
+  (into {} (for [x (range (count node-data)) y (range (count node-data)) :when (not= x y)] (create-connection-data [x y] distance-data))))
+
+(defn initialize-distances 
   "Inititialize the data of all connections between the given nodes"
   [node-data] 
-  (into {} (for [x (range (count node-data)) y (range (count node-data)) :when (not= x y)] (create-connection-data [x y] node-data))))
+  (into {} (for [x (range (count node-data)) y (range (count node-data)) :when (not= x y)] {[x y] (length-of-connection [x y] node-data)})))
 
 (defn evaporate-one-connection 
   "Evaporates pheromone on a connection between two nodes"
-  [{:keys [distance tau]}] 
+  [{:keys [weighted-distance tau]}] 
   (let [new-tau (* tau (- 1 rho))
         weighted-tau (Math/pow new-tau alpha)
-        weighted-distance  (Math/pow distance beta)
         new-probability (/ weighted-tau weighted-distance)]
-    (->Connection distance new-tau new-probability)))
+    (->ConnectionInfo weighted-distance new-tau new-probability)))
 
 (defn evaporate-all-connections
   "Evaporates pheromone on all connections between two nodes"
@@ -67,13 +74,12 @@
 (defn adjust-pheromone-for-one-connection
   "Amplifies pehoromone a connection walked by an ant"
   [tour-length connection-data connection-id]
-  (let [{:keys [distance tau]} (connection-data connection-id)
+  (let [{:keys [weighted-distance tau]} (connection-data connection-id)
         new-tau (+ tau (/ 1 tour-length))
         weighted-tau (Math/pow new-tau alpha)
-        weighted-distance  (Math/pow distance beta)
         new-probability (/ weighted-tau weighted-distance)
         new-connection-data (assoc connection-data connection-id 
-                              (->Connection distance new-tau new-probability))]
+                              (->ConnectionInfo weighted-distance new-tau new-probability))]
     new-connection-data))
 
 (defn adjust-pheromone-for-tour
@@ -103,16 +109,16 @@
 
 (defn walk-ant-tour
   "Computes a tour passing all given nodes"
-  [connection-data number-of-nodes]
+  [distance-data connection-data number-of-nodes]
   (let [tour ((nth (iterate (partial add-next-node-to-tour connection-data) {:tour [0] :remaining-nodes (range 1 number-of-nodes)}) (dec number-of-nodes)) :tour)]
-    {:tour-length (length-of-tour connection-data (conj tour 0)) :tour (conj tour 0)}))
+    {:tour-length (length-of-tour distance-data (conj tour 0)) :tour (conj tour 0)}))
 
 (defn one-generation-ant-tours
   "Computes tours passing all given nodes concurrently for a given number of ants"
-  [number-of-ants number-of-nodes connection-data generation]
-  (let [tour-list (pmap (fn [ant] (walk-ant-tour connection-data number-of-nodes)) (range number-of-ants))
+  [number-of-ants number-of-nodes distance-data connection-data generation]
+  (let [tour-list (pmap (fn [ant] (walk-ant-tour distance-data connection-data number-of-nodes)) (range number-of-ants))
         generation-shortest-tour (apply min-key :tour-length tour-list)
-        new-connection-data (-> connection-data (adjust-pheromone-for-multiple-tours tour-list) (evaporate-all-connections))]
+        new-connection-data (-> connection-data (adjust-pheromone-for-multiple-tours tour-list) evaporate-all-connections)]
     (print "Generation:" generation)
     (when (< (:tour-length generation-shortest-tour) (:tour-length @shortest-tour))
       (print " Length:" (:tour-length generation-shortest-tour))
@@ -123,8 +129,9 @@
 (defn antopt
   "Computes the shortest tour through a number of given nodes using ant colony optimization"
   [node-data]
-  (reduce (partial one-generation-ant-tours number-of-ants (count node-data)) (initialize-all-connections node-data) (range 1 (inc number-of-generations)))
-  @shortest-tour)
+  (let [distance-data (initialize-distances node-data)]
+    (reduce (partial one-generation-ant-tours number-of-ants (count node-data) distance-data) (initialize-connections node-data distance-data) (range 1 (inc number-of-generations)))
+    @shortest-tour))
 
 (defn -main [& args]
   "Main function to test the optimization"
