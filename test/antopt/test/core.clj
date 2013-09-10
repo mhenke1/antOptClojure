@@ -15,11 +15,11 @@
             ])
 
 (def test-data {
-                [2 1] (->ConnectionInfo 25 0.019983426066513734 7.993370426605494E-4), 
-                [1 2] (->ConnectionInfo 25 0.08945806419434195  0.003578322567773678), 
-                [1 0] (->ConnectionInfo 25 0.09253302650638885  0.003701321060255554), 
-                [0 1] (->ConnectionInfo 25 0.049126426838469066 0.00196505707353876),
-                [0 2] (->ConnectionInfo 25 0.055126426838469066 0.002365057073538763)})
+                [2 1] (->ConnectionInfo 5 25 0.019983426066513734 7.993370426605494E-4), 
+                [1 2] (->ConnectionInfo 5 25 0.08945806419434195  0.003578322567773678), 
+                [1 0] (->ConnectionInfo 5 25 0.09253302650638885  0.003701321060255554), 
+                [0 1] (->ConnectionInfo 5 25 0.049126426838469066 0.00196505707353876),
+                [0 2] (->ConnectionInfo 5 25 0.055126426838469066 0.002365057073538763)})
 
 (def test-distance-data {[2 1] 5, [1 2] 5, [1 0] 5, [0 1] 5, [0 2] 5})
 
@@ -38,24 +38,26 @@
   (is (= 15 (length-of-tour test-distance-data [0 2 1 0]))))
 
 (deftest test-create-connection-data 
-  (let [test-connection-data (create-connection-data [0 1] {[0 1] 5})
+  (let [test-connection-data (create-connection-data [0 1] [[0 0] [4 3]])
         test-info (test-connection-data [0 1])]
+    (is (= 5 (:distance test-info)))
     (is (= 25.0 (:weighted-distance test-info)))
     (is (> 0.1 (:tau test-info))))) 
 
+(deftest test-extract-distance-data
+  (let [test-new-distance-data (extract-distance-data test-data)] 
+    (is (= test-distance-data test-new-distance-data)))) 
+
 (deftest test-initialize-connections 
-  (let [connections (initialize-connections [[0 0] [4 3]] (initialize-distances [[0 0] [4 3]]))
+  (let [connections (initialize-connections [[0 0] [4 3]])
         test-info1 (connections [0 1])
         test-info2 (connections [1 0])]
     (is (> 0.1 (:tau test-info1)))
-    (is (> 0.1 (:tau test-info2)))))
-
-(deftest test-initialize-distances 
-  (let [distances (initialize-distances [[0 0] [4 3]])
-        test-info1 (distances [0 1])
-        test-info2 (distances [1 0])]
-    (is (= 5 test-info1))
-    (is (= 5 test-info2))))
+    (is (> 0.1 (:tau test-info2)))
+    (is (= 25.0 (:weighted-distance test-info1)))
+    (is (= 25.0 (:weighted-distance test-info2)))
+    (is (= 5 (:distance test-info1)))
+    (is (= 5 (:distance test-info1)))))
 
 (deftest test-evaporate-one-connection 
   (let [test-connection (test-data [0 1])
@@ -79,6 +81,7 @@
         test-connection (test-data [0 1])
         test-evap (evap-data [0 1])]
     (is (= (:distance test-evap) (:distance test-connection)))
+    (is (= (:weighted-distance test-evap) (:weighted-distance test-connection)))
     (is (> (:tau test-evap) (:tau test-connection)))
     (is (> (:probability test-evap) (:probability test-connection)))))
 
@@ -89,9 +92,11 @@
         test-evap1 (evap-data [0 1])
         test-evap2 (evap-data [1 2])]
     (is (= (:distance test-evap1) (:distance test-connection1)))
+    (is (= (:weighted-distance test-evap1) (:weighted-distance test-connection1)))
     (is (> (:tau test-evap1) (:tau test-connection1)))
     (is (> (:probability test-evap1) (:probability test-connection1)))
     (is (= (:distance test-evap2) (:distance test-connection2)))
+    (is (= (:weighted-distance test-evap2) (:weighted-distance test-connection2)))
     (is (> (:tau test-evap2) (:tau test-connection2)))
     (is (> (:probability test-evap2) (:probability test-connection2)))))
 
@@ -102,9 +107,11 @@
         test-evap1 (evap-data [0 1])
         test-evap2 (evap-data [1 2])]
     (is (= (:distance test-evap1) (:distance test-connection1)))
+    (is (= (:weighted-distance test-evap1) (:weighted-distance test-connection1)))
     (is (> (:tau test-evap1) (:tau test-connection1)))
     (is (> (:probability test-evap1) (:probability test-connection1)))
     (is (= (:distance test-evap2) (:distance test-connection2)))
+    (is (= (:weighted-distance test-evap2) (:weighted-distance test-connection2)))
     (is (> (:tau test-evap2) (:tau test-connection2)))
     (is (> (:probability test-evap2) (:probability test-connection2)))))
 
@@ -120,8 +127,9 @@
     (is (complement (some #{next-node} remaining-nodes)))))
 
 (deftest test-walk-ant-tour
-  (let [distance-data (initialize-distances nodes)
-    {:keys [tour-length tour]} (walk-ant-tour distance-data (initialize-connections nodes distance-data) (count nodes))]
+  (let [connection-data (initialize-connections nodes)
+        distance-data (extract-distance-data connection-data)
+        {:keys [tour-length tour]} (walk-ant-tour distance-data connection-data (count nodes))]
     (is (= (count tour) (+ 1 (count nodes))))
     (is (= (count tour) (+ 1 (count (set tour)))))
     (is (some #{0} tour))
@@ -131,6 +139,6 @@
         (is (> tour-length 0)))))
 
 (deftest test-one-generation-ant-tours 
-  (let [distance-data (initialize-distances nodes)
-        foo (one-generation-ant-tours 5 (count nodes) distance-data (initialize-connections nodes distance-data) 1)]
+  (let [connection-data (initialize-connections nodes)
+        foo (one-generation-ant-tours 5 (count nodes) (extract-distance-data connection-data) connection-data 1)]
     (is (= 1 1))))
