@@ -12,7 +12,7 @@
   [c g node]
   (let [[x y] (scaled-node-cordinates node)
         dot-style (style :background "#00bc00":stroke (stroke :width 3))]
-    (do (draw g (circle x y 5) dot-style))))
+    (draw g (circle x y 5) dot-style)))
 
 (defn paint-nodes
   [c g nodes]
@@ -23,7 +23,7 @@
   (let [[correctedx1 correctedy1] (scaled-node-cordinates (nodes node-id1))
         [correctedx2 correctedy2] (scaled-node-cordinates (nodes node-id2))
         line-style (style :foreground "#FF0000" :stroke 3 :cap :round)]
-    (do (draw g (line correctedx1 correctedy1 correctedx2 correctedy2) line-style))))
+    (draw g (line correctedx1 correctedy1 correctedx2 correctedy2) line-style)))
 
 (defn paint-tour
   [c g shortest-tour nodes]
@@ -32,7 +32,7 @@
 
 (defn paint
   [c g]
-  (do (paint-tour c g @shortest-tour @nodes))
+  (paint-tour c g @shortest-tour @nodes)
   (paint-nodes c g @nodes))
 
 (defn content-panel[]
@@ -50,8 +50,8 @@
                  :on-close :dispose
                  :visible? true
                  :content (content-panel))]
-    (do (.setLocation f (java.awt.Point. 100 300))
-      (add-watch shortest-tour :wst (fn [key ref old new] (repaint! (select f [:#antopt])))))))
+      (.setLocation f (java.awt.Point. 100 300))
+      (add-watch shortest-tour :wst (fn [key ref old new] (repaint! (select f [:#antopt]))))))
 
 (defn -main [& args]
   "Main function to test the optimization"
