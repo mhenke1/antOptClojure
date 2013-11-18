@@ -33,7 +33,7 @@
 (defn length-of-tour-internal
   "Calculates the total length of a given tour"
   [distance-data tour] 
-  (apply + (map #(distance-data %) (partition 2  1 tour))))
+  (apply + (map distance-data (partition 2  1 tour))))
 
 (def length-of-tour
    (memoize length-of-tour-internal))
