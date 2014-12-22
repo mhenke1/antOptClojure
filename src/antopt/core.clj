@@ -12,8 +12,9 @@
 
 (defrecord ConnectionInfo [distance weighted-distance tau probability])
 
-(defn read-edn-from-file-safely [filename]
+(defn read-edn-from-file-safely 
   "Read edn data from a file savely"
+  [filename]  
   (with-open
     [r (java.io.PushbackReader.
          (clojure.java.io/reader filename))]
@@ -134,8 +135,9 @@
     (reduce (partial one-generation-ant-tours number-of-ants (count node-data) (extract-distance-data connection-data)) connection-data (range 1 (inc number-of-generations)))
     @shortest-tour))
 
-(defn -main [& args]
+(defn -main 
   "Main function to test the optimization"
+  [& args]
   (let [node-data (read-edn-from-file-safely "tsmdata/bier127.tsm")
         shortest-antopt-tour (antopt node-data)]
     (shutdown-agents)
