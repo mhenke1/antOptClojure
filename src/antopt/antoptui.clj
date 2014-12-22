@@ -15,25 +15,25 @@
     (draw g (circle x y 5) dot-style)))
 
 (defn paint-nodes
-  [c g nodes]
-  (doseq [node nodes] (paint-node c g node)))
+  [c g]
+  (doseq [node @nodes] (paint-node c g node)))
 
 (defn paint-connection
-  [c g [node-id1 node-id2] nodes]
-  (let [[correctedx1 correctedy1] (scaled-node-cordinates (nodes node-id1))
-        [correctedx2 correctedy2] (scaled-node-cordinates (nodes node-id2))
+  [c g [node-id1 node-id2]]
+  (let [[correctedx1 correctedy1] (scaled-node-cordinates (@nodes node-id1))
+        [correctedx2 correctedy2] (scaled-node-cordinates (@nodes node-id2))
         line-style (style :foreground "#FF0000" :stroke 3 :cap :round)]
     (draw g (line correctedx1 correctedy1 correctedx2 correctedy2) line-style)))
 
 (defn paint-tour
-  [c g shortest-tour nodes]
-  (let [connections-in-tour (partition 2  1 (shortest-tour :tour))]
-    (doseq [connection connections-in-tour] (paint-connection c g connection nodes))))
+  [c g]
+  (let [connections-in-tour (partition 2  1 (@shortest-tour :tour))]
+    (doseq [connection connections-in-tour] (paint-connection c g connection))))
 
 (defn paint
   [c g]
-  (paint-tour c g @shortest-tour @nodes)
-  (paint-nodes c g @nodes))
+  (paint-tour c g)
+  (paint-nodes c g))
 
 (defn content-panel[]
   (border-panel
@@ -53,8 +53,9 @@
       (.setLocation f (java.awt.Point. 100 300))
       (add-watch shortest-tour :wst (fn [key ref old new] (repaint! (select f [:#antopt]))))))
 
-(defn -main [& args]
-  "Main function to test the optimization"
+(defn -main 
+  "Main function to test the optimization"  
+  [& args]
   ;(reset! nodes (read-edn-from-file-safely "tsmdata/belgiumtour.tsm"))
   (reset! nodes (read-edn-from-file-safely "tsmdata/xqf131.tsm"))
   ;(reset! nodes (read-edn-from-file-safely "tsmdata/eil51.tsm"))
