@@ -11,13 +11,14 @@ This document describes the modernization of the Ant Colony Optimization project
 **Original:**
 - Used Leiningen with `project.clj`
 - Clojure 1.8.0
-- Seesaw 1.4.5
+- Seesaw 1.4.5 (Swing wrapper)
 
 **Modern:**
 - Uses Clojure CLI tools with `deps.edn`
 - Clojure 1.12.0 (latest stable)
-- Seesaw 1.5.0 (latest)
+- Quil 4.3.1563 (Processing wrapper for visualizations)
 - Modern test runner integration
+- JVM options configured to suppress warnings
 
 ### 2. Code Organization
 
@@ -151,16 +152,20 @@ This document describes the modernization of the Ant Colony Optimization project
 
 ### 9. UI Implementation
 
-**Original:**
+**Original (Seesaw/Swing):**
 - Direct atom manipulation from UI
 - Mixed rendering and state logic
 - Global state coupling
+- Swing-based components
 
-**Modern:**
+**Modern (Quil/Processing):**
 - Local UI state with `defonce`
-- Clear separation of rendering and state
-- Watch-based updates
-- Better encapsulation
+- Functional-mode middleware for state management
+- Animation loop with setup/update/draw lifecycle
+- Real-time visualization with 30 FPS
+- Semi-transparent info panel to prevent overlap
+- Better suited for graphics and animations
+- JVM options configured to suppress warnings
 
 ### 10. Configuration Management
 
@@ -232,9 +237,11 @@ Potential improvements for future versions:
 2. Implement additional ACO variants (ACS, MMAS)
 3. Add benchmarking utilities
 4. Support for additional TSP file formats
-5. Web-based visualization option
+5. Web-based visualization with ClojureScript and Reagent
 6. Performance profiling tools
 7. Multi-objective optimization support
+8. Interactive parameter tuning in UI
+9. Export visualization as video/GIF
 
 ## Conclusion
 

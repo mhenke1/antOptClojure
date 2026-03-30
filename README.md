@@ -10,7 +10,7 @@ This project implements the Ant Colony Optimization metaheuristic to find near-o
 
 - **Modern Idiomatic Clojure**: Written using Clojure 1.12 with modern best practices
 - **Parallel Processing**: Uses `pmap` for concurrent ant tour generation
-- **Real-time Visualization**: Optional GUI showing the optimization progress
+- **Real-time Visualization**: Optional GUI using Quil showing the optimization progress with animated tour updates
 - **Configurable Parameters**: Easily adjust algorithm parameters
 - **Comprehensive Tests**: Full test suite with clojure.test
 

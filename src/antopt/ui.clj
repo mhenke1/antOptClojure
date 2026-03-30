@@ -1,21 +1,23 @@
 (ns antopt.ui
   "Graphical user interface for visualizing ant colony optimization.
    
-   Displays nodes and the evolving best tour in real-time using Seesaw."
+   Displays nodes and the evolving best tour in real-time using Quil."
   (:require [antopt.core :as aco]
-            [seesaw.core :as ss]
-            [seesaw.graphics :as sg])
+            [quil.core :as q]
+            [quil.middleware :as m])
   (:gen-class))
 
 ;; UI State
 (defonce ui-state
   (atom {:nodes []
          :best-tour {:length Long/MAX_VALUE
-                     :path []}}))
+                     :path []}
+         :generation 0
+         :running true}))
 
 ;; Scaling and rendering
 (def ^:private scale-factor 5)
-(def ^:private padding 10)
+(def ^:private padding 20)
 
 (defn scale-coordinates
   "Scale node coordinates for display."
@@ -23,71 +25,75 @@
   [(+ padding (* x scale-factor))
    (+ padding (* y scale-factor))])
 
-(defn paint-node
+(defn draw-node
   "Draw a single node on the canvas."
-  [graphics node]
-  (let [[x y] (scale-coordinates node)
-        style (sg/style :background "#00bc00"
-                       :stroke (sg/stroke :width 3))]
-    (sg/draw graphics (sg/circle x y 5) style)))
+  [node]
+  (let [[x y] (scale-coordinates node)]
+    (q/fill 0 188 0)
+    (q/stroke 0 100 0)
+    (q/stroke-weight 2)
+    (q/ellipse x y 10 10)))
 
-(defn paint-all-nodes
+(defn draw-all-nodes
   "Draw all nodes on the canvas."
-  [graphics nodes]
+  [nodes]
   (doseq [node nodes]
-    (paint-node graphics node)))
+    (draw-node node)))
 
-(defn paint-connection
+(defn draw-connection
   "Draw a connection between two nodes."
-  [graphics nodes [node-id1 node-id2]]
+  [nodes [node-id1 node-id2]]
   (let [[x1 y1] (scale-coordinates (nodes node-id1))
-        [x2 y2] (scale-coordinates (nodes node-id2))
-        style (sg/style :foreground "#FF0000"
-                       :stroke 3
-                       :cap :round)]
-    (sg/draw graphics (sg/line x1 y1 x2 y2) style)))
+        [x2 y2] (scale-coordinates (nodes node-id2))]
+    (q/stroke 255 0 0)
+    (q/stroke-weight 2)
+    (q/line x1 y1 x2 y2)))
 
-(defn paint-tour
+(defn draw-tour
   "Draw the complete tour path."
-  [graphics nodes tour-path]
+  [nodes tour-path]
   (when (seq tour-path)
     (doseq [connection (partition 2 1 tour-path)]
-      (paint-connection graphics nodes connection))))
+      (draw-connection nodes connection))))
 
-(defn paint-canvas
-  "Main paint function for the canvas."
-  [canvas graphics]
-  (let [{:keys [nodes best-tour]} @ui-state]
-    (paint-tour graphics nodes (:path best-tour))
-    (paint-all-nodes graphics nodes)))
-
-;; UI Components
-(defn create-canvas
-  "Create the main drawing canvas."
+(defn setup
+  "Setup function called once at the start."
   []
-  (ss/canvas :id :antopt-canvas
-             :background "#ffffff"
-             :paint paint-canvas))
+  (q/frame-rate 30)
+  (q/smooth)
+  @ui-state)
 
-(defn create-frame
-  "Create the main application frame."
-  [nodes]
-  (let [max-coords (map #(apply max %) (apply map vector nodes))
-        [max-x max-y] (scale-coordinates max-coords)
-        frame (ss/frame :title "Ant Colony Optimization - TSP"
-                       :width (+ 50 max-x)
-                       :height (+ 50 max-y)
-                       :on-close :dispose
-                       :content (create-canvas))]
-    (.setLocation frame (java.awt.Point. 100 300))
+(defn update-state
+  "Update function called each frame."
+  [state]
+  @ui-state)
+
+(defn draw-state
+  "Draw function called each frame."
+  [state]
+  ;; Clear background
+  (q/background 255)
+  
+  ;; Draw tour
+  (draw-tour (:nodes state) (:path (:best-tour state)))
+  
+  ;; Draw nodes
+  (draw-all-nodes (:nodes state))
+  
+  ;; Draw info panel at bottom with semi-transparent background
+  (let [panel-height 70
+        panel-y (- (q/height) panel-height)]
+    ;; Draw semi-transparent background for text
+    (q/fill 255 255 255 230)
+    (q/no-stroke)
+    (q/rect 0 panel-y (q/width) panel-height)
     
-    ;; Watch for tour updates and repaint
-    (add-watch ui-state :tour-watcher
-               (fn [_ _ _ new-state]
-                 (ss/invoke-later
-                   (ss/repaint! (ss/select frame [:#antopt-canvas])))))
-    
-    frame))
+    ;; Draw info text
+    (q/fill 0)
+    (q/text-size 14)
+    (q/text (str "Generation: " (:generation state)) 10 (+ panel-y 20))
+    (q/text (str "Best Tour Length: " (:length (:best-tour state))) 10 (+ panel-y 40))
+    (q/text (str "Cities: " (count (:nodes state))) 10 (+ panel-y 60))))
 
 ;; Optimization with UI updates
 (defn optimize-with-ui
@@ -105,7 +111,12 @@
                         (:length (:shortest-tour state)))))
       
       ;; Update UI state
-      (swap! ui-state assoc :best-tour (:shortest-tour state))
+      (swap! ui-state assoc 
+             :best-tour (:shortest-tour state)
+             :generation gen)
+      
+      ;; Small delay to allow UI to update
+      (Thread/sleep 10)
       
       (if (>= gen (:num-generations config))
         (:shortest-tour state)
@@ -184,9 +195,13 @@
         nodes (aco/read-tsm-file filepath)
         config (assoc aco/default-config
                      :num-ants num-ants
-                     :num-generations num-generations)]
+                     :num-generations num-generations)
+        max-coords (map #(apply max %) (apply map vector nodes))
+        [max-x max-y] (scale-coordinates max-coords)
+        width (+ 100 max-x)
+        height (+ 100 max-y)]
     
-    (println "=== Ant Colony Optimization - GUI ===")
+    (println "=== Ant Colony Optimization - GUI (Quil) ===")
     (println "Dataset:" filepath)
     (println "Number of cities:" (count nodes))
     (println "Ants per generation:" num-ants)
@@ -196,14 +211,9 @@
     ;; Initialize UI state
     (reset! ui-state {:nodes nodes
                       :best-tour {:length Long/MAX_VALUE
-                                  :path []}})
-    
-    ;; Set native look and feel
-    (ss/native!)
-    
-    ;; Create and show frame
-    (-> (create-frame nodes)
-        ss/show!)
+                                  :path []}
+                      :generation 0
+                      :running true})
     
     ;; Run optimization in background
     (future
@@ -211,6 +221,17 @@
         (println "\n=== Optimization Complete ===")
         (println "Tour length:" (:length result))
         (println "Tour path:" (:path result))
-        (shutdown-agents)))))
+        (swap! ui-state assoc :running false)
+        (shutdown-agents)))
+    
+    ;; Start Quil sketch
+    (q/defsketch aco-visualization
+      :title "Ant Colony Optimization - TSP"
+      :size [width height]
+      :setup setup
+      :update update-state
+      :draw draw-state
+      :middleware [m/fun-mode]
+      :features [:keep-on-top])))
 
 ;; Made with Bob

@@ -32,10 +32,13 @@ This document provides a verification checklist for the modernized Ant Colony Op
 - [x] Namespace documentation
 - [x] Separation of concerns (rendering vs state)
 - [x] Local state management with defonce
-- [x] Watch-based UI updates
-- [x] Clean paint functions
-- [x] Proper Seesaw integration
+- [x] Functional-mode middleware for state updates
+- [x] Clean draw functions with Quil
+- [x] Proper Quil/Processing integration
 - [x] Background processing with future
+- [x] Real-time animation at 30 FPS
+- [x] Semi-transparent info panel at bottom
+- [x] JVM options configured to suppress warnings
 
 ### Tests (test/antopt/core_test.clj)
 
@@ -76,9 +79,10 @@ This document provides a verification checklist for the modernized Ant Colony Op
 ## ✅ Dependencies
 
 - [x] Latest stable Clojure (1.12.0)
-- [x] Updated Seesaw (1.5.0)
+- [x] Quil 4.3.1563 (Processing wrapper for visualizations)
 - [x] Test runner configuration
-- [x] All dependencies available on Maven Central
+- [x] JVM options configured for native access
+- [x] All dependencies available on Maven Central/Clojars
 
 ## ✅ Documentation
 
