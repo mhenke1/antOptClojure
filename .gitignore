@@ -1,0 +1,25 @@
+# Clojure
+.cpcache/
+.nrepl-port
+.rebel_readline_history
+target/
+classes/
+checkouts/
+pom.xml
+pom.xml.asc
+*.jar
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.lsp/
+.clj-kondo/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary
+temp_repo/
