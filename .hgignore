@@ -1,5 +1,0 @@
-syntax: glob
-.lein-deps-sum
-.lein-failures
-target
-.lein-repl-history
