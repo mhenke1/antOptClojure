@@ -20,30 +20,33 @@
         (is (= 4 (count options))))
       
       (testing "File option spec"
-        (let [file-opt (first options)]
+        (let [file-opt (first options)
+              option-map (apply hash-map (drop 3 file-opt))]
           (is (= "-f" (first file-opt)))
           (is (= "--file PATH" (second file-opt)))
           (is (= "Path to TSM file" (nth file-opt 2)))
-          (is (= "resources/bier127.tsm" (:default (apply hash-map (drop 3 file-opt)))))
-          (is (fn? (first (:validate (apply hash-map (drop 3 file-opt))))))))
+          (is (= "resources/bier127.tsm" (:default option-map)))
+          (is (fn? (first (:validate option-map))))))
       
       (testing "Ants option spec"
-        (let [ants-opt (second options)]
+        (let [ants-opt (second options)
+              option-map (apply hash-map (drop 3 ants-opt))]
           (is (= "-a" (first ants-opt)))
           (is (= "--ants N" (second ants-opt)))
           (is (= "Number of ants per generation" (nth ants-opt 2)))
-          (is (= 500 (:default (apply hash-map (drop 3 ants-opt)))))
-          (is (fn? (:parse-fn (apply hash-map (drop 3 ants-opt)))))
-          (is (fn? (first (:validate (apply hash-map (drop 3 ants-opt))))))))
+          (is (= 500 (:default option-map)))
+          (is (fn? (:parse-fn option-map)))
+          (is (fn? (first (:validate option-map))))))
       
       (testing "Generations option spec"
-        (let [gen-opt (nth options 2)]
+        (let [gen-opt (nth options 2)
+              option-map (apply hash-map (drop 3 gen-opt))]
           (is (= "-g" (first gen-opt)))
           (is (= "--generations N" (second gen-opt)))
           (is (= "Number of generations to run" (nth gen-opt 2)))
-          (is (= 125 (:default (apply hash-map (drop 3 gen-opt)))))
-          (is (fn? (:parse-fn (apply hash-map (drop 3 gen-opt)))))
-          (is (fn? (first (:validate (apply hash-map (drop 3 gen-opt))))))))
+          (is (= 125 (:default option-map)))
+          (is (fn? (:parse-fn option-map)))
+          (is (fn? (first (:validate option-map))))))
       
       (testing "Help option spec"
         (let [help-opt (nth options 3)]
@@ -56,15 +59,18 @@
     (let [options (cli/make-cli-options "custom.tsm" 100 50)]
       
       (testing "Custom file default"
-        (let [file-opt (first options)]
-          (is (= "custom.tsm" (:default (apply hash-map (drop 3 file-opt)))))))
+        (let [file-opt (first options)
+              option-map (apply hash-map (drop 3 file-opt))]
+          (is (= "custom.tsm" (:default option-map)))))
       
       (testing "Custom ants default"
-        (let [ants-opt (second options)]
-          (is (= 100 (:default (apply hash-map (drop 3 ants-opt)))))))
+        (let [ants-opt (second options)
+              option-map (apply hash-map (drop 3 ants-opt))]
+          (is (= 100 (:default option-map)))))
       
       (testing "Custom generations default"
-        (let [gen-opt (nth options 2)]
-          (is (= 50 (:default (apply hash-map (drop 3 gen-opt))))))))))
+        (let [gen-opt (nth options 2)
+              option-map (apply hash-map (drop 3 gen-opt))]
+          (is (= 50 (:default option-map))))))))
 
 ;; Made with Bob

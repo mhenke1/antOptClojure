@@ -243,50 +243,28 @@
      clojure -M -m antopt.core --ants 200 --generations 50
      clojure -M -m antopt.core -f resources/eil51.tsm -a 300"
   [& args]
-  (let [{:keys [options arguments errors summary]} (parse-opts args cli-options)]
-    (cond
-      ;; Show help
-      (:help options)
-      (do
-        (println "Ant Colony Optimization for TSP")
-        (println)
-        (println summary)
-        (System/exit 0))
-      
-      ;; Handle errors
-      errors
-      (do
-        (println "Error parsing arguments:")
-        (doseq [error errors]
-          (println " " error))
-        (println)
-        (println summary)
-        (System/exit 1))
-      
-      ;; Run optimization
-      :else
-      (let [filepath (:file options)
-            num-ants (:ants options)
-            num-generations (:generations options)
-            config (assoc default-config
-                         :num-ants num-ants
-                         :num-generations num-generations)]
-        (try
-          (let [nodes (read-tsm-file filepath)]
-            (println "=== Ant Colony Optimization ===")
-            (println "Dataset:" filepath)
-            (println "Number of cities:" (count nodes))
-            (println "Ants per generation:" num-ants)
-            (println "Number of generations:" num-generations)
-            (println)
-            (let [result (optimize nodes config)]
-              (println "\n=== Optimization Complete ===")
-              (println "Tour length:" (:length result))
-              (println "Tour path:" (:path result))
-              (shutdown-agents)))
-          (catch java.io.FileNotFoundException e
-            (println (str "Error: File not found: " filepath))
-            (System/exit 1))
-          (catch Exception e
-            (println (str "Error reading file: " (.getMessage e)))
-            (System/exit 1)))))))
+  (let [exit-code (cli/handle-cli
+                    args
+                    cli-options
+                    "Ant Colony Optimization for TSP"
+                    (fn [options]
+                      (let [filepath (:file options)
+                            num-ants (:ants options)
+                            num-generations (:generations options)
+                            config (assoc default-config
+                                         :num-ants num-ants
+                                         :num-generations num-generations)
+                            nodes (read-tsm-file filepath)]
+                        (println "=== Ant Colony Optimization ===")
+                        (println "Dataset:" filepath)
+                        (println "Number of cities:" (count nodes))
+                        (println "Ants per generation:" num-ants)
+                        (println "Number of generations:" num-generations)
+                        (println)
+                        (let [result (optimize nodes config)]
+                          (println "\n=== Optimization Complete ===")
+                          (println "Tour length:" (:length result))
+                          (println "Tour path:" (:path result))
+                          (shutdown-agents)))))]
+    (when (not= exit-code 0)
+      (System/exit exit-code))))
