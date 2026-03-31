@@ -3,8 +3,10 @@
    
    Displays nodes and the evolving best tour in real-time using Quil."
   (:require [antopt.core :as aco]
+            [antopt.cli :as cli]
             [quil.core :as q]
-            [quil.middleware :as m])
+            [quil.middleware :as m]
+            [clojure.tools.cli :refer [parse-opts]])
   (:gen-class))
 
 ;; UI State
@@ -124,48 +126,12 @@
               (aco/process-generation state conns distances config)]
           (recur (inc gen) state connections))))))
 
-;; Argument parsing (reuse from core)
-(defn parse-int
-  "Parse string to integer, return nil if invalid."
-  [s]
-  (try
-    (Integer/parseInt s)
-    (catch Exception _ nil)))
-
-(defn parse-args
-  "Parse command line arguments into a map.
-   Supports both named parameters and positional filepath."
-  [args]
-  (loop [remaining args
-         result {:filepath nil
-                 :num-ants nil
-                 :num-generations nil}]
-    (if (empty? remaining)
-      result
-      (let [arg (first remaining)]
-        (cond
-          ;; Named parameters
-          (or (= arg "-a") (= arg "--ants"))
-          (recur (drop 2 remaining)
-                 (assoc result :num-ants (parse-int (second remaining))))
-          
-          (or (= arg "-g") (= arg "--generations"))
-          (recur (drop 2 remaining)
-                 (assoc result :num-generations (parse-int (second remaining))))
-          
-          (or (= arg "-f") (= arg "--file"))
-          (recur (drop 2 remaining)
-                 (assoc result :filepath (second remaining)))
-          
-          ;; Filepath (first non-flag argument, for backward compatibility)
-          (and (not (.startsWith arg "-"))
-               (nil? (:filepath result)))
-          (recur (rest remaining)
-                 (assoc result :filepath arg))
-          
-          ;; Skip unknown flags
-          :else
-          (recur (rest remaining) result))))))
+;; CLI options
+(def cli-options
+  "Command line options specification for tools.cli."
+  (cli/make-cli-options "resources/xqf131.tsm"
+                        (:num-ants aco/default-config)
+                        (:num-generations aco/default-config)))
 
 ;; Main entry point
 (defn -main
@@ -178,60 +144,87 @@
      -f, --file PATH        Path to TSM file (default: resources/xqf131.tsm)
      -a, --ants N           Number of ants per generation (default: 500)
      -g, --generations N    Number of generations to run (default: 125)
+     -h, --help             Show help message
    
    Examples:
      clojure -M:run
      clojure -M:run -f resources/eil51.tsm
      clojure -M:run --file resources/eil51.tsm -a 300 -g 100
      clojure -M:run --ants 200 --generations 50
-     clojure -M:run -f resources/eil51.tsm -a 300
-     
-   Note: Positional filepath (without -f) still supported for backward compatibility"
+     clojure -M:run -f resources/eil51.tsm -a 300"
   [& args]
-  (let [parsed (parse-args args)
-        filepath (or (:filepath parsed) "resources/xqf131.tsm")
-        num-ants (or (:num-ants parsed) (:num-ants aco/default-config))
-        num-generations (or (:num-generations parsed) (:num-generations aco/default-config))
-        nodes (aco/read-tsm-file filepath)
-        config (assoc aco/default-config
-                     :num-ants num-ants
-                     :num-generations num-generations)
-        max-coords (map #(apply max %) (apply map vector nodes))
-        [max-x max-y] (scale-coordinates max-coords)
-        width (+ 100 max-x)
-        height (+ 100 max-y)]
-    
-    (println "=== Ant Colony Optimization - GUI (Quil) ===")
-    (println "Dataset:" filepath)
-    (println "Number of cities:" (count nodes))
-    (println "Ants per generation:" num-ants)
-    (println "Number of generations:" num-generations)
-    (println)
-    
-    ;; Initialize UI state
-    (reset! ui-state {:nodes nodes
-                      :best-tour {:length Long/MAX_VALUE
-                                  :path []}
-                      :generation 0
-                      :running true})
-    
-    ;; Run optimization in background
-    (future
-      (let [result (optimize-with-ui nodes config)]
-        (println "\n=== Optimization Complete ===")
-        (println "Tour length:" (:length result))
-        (println "Tour path:" (:path result))
-        (swap! ui-state assoc :running false)
-        (shutdown-agents)))
-    
-    ;; Start Quil sketch
-    (q/defsketch aco-visualization
-      :title "Ant Colony Optimization - TSP"
-      :size [width height]
-      :setup setup
-      :update update-state
-      :draw draw-state
-      :middleware [m/fun-mode]
-      :features [:keep-on-top])))
+  (let [{:keys [options arguments errors summary]} (parse-opts args cli-options)]
+    (cond
+      ;; Show help
+      (:help options)
+      (do
+        (println "Ant Colony Optimization - GUI (Quil)")
+        (println)
+        (println summary)
+        (System/exit 0))
+      
+      ;; Handle errors
+      errors
+      (do
+        (println "Error parsing arguments:")
+        (doseq [error errors]
+          (println " " error))
+        (println)
+        (println summary)
+        (System/exit 1))
+      
+      ;; Run optimization with UI
+      :else
+      (let [filepath (:file options)
+            num-ants (:ants options)
+            num-generations (:generations options)
+            config (assoc aco/default-config
+                         :num-ants num-ants
+                         :num-generations num-generations)]
+        (try
+          (let [nodes (aco/read-tsm-file filepath)
+                max-coords (map #(apply max %) (apply map vector nodes))
+                [max-x max-y] (scale-coordinates max-coords)
+                width (+ 100 max-x)
+                height (+ 100 max-y)]
+            
+            (println "=== Ant Colony Optimization - GUI (Quil) ===")
+            (println "Dataset:" filepath)
+            (println "Number of cities:" (count nodes))
+            (println "Ants per generation:" num-ants)
+            (println "Number of generations:" num-generations)
+            (println)
+            
+            ;; Initialize UI state
+            (reset! ui-state {:nodes nodes
+                              :best-tour {:length Long/MAX_VALUE
+                                          :path []}
+                              :generation 0
+                              :running true})
+            
+            ;; Run optimization in background
+            (future
+              (let [result (optimize-with-ui nodes config)]
+                (println "\n=== Optimization Complete ===")
+                (println "Tour length:" (:length result))
+                (println "Tour path:" (:path result))
+                (swap! ui-state assoc :running false)
+                (shutdown-agents)))
+            
+            ;; Start Quil sketch
+            (q/defsketch aco-visualization
+              :title "Ant Colony Optimization - TSP"
+              :size [width height]
+              :setup setup
+              :update update-state
+              :draw draw-state
+              :middleware [m/fun-mode]
+              :features [:keep-on-top]))
+          (catch java.io.FileNotFoundException e
+            (println (str "Error: File not found: " filepath))
+            (System/exit 1))
+          (catch Exception e
+            (println (str "Error reading file: " (.getMessage e)))
+            (System/exit 1)))))))
 
 ;; Made with Bob

@@ -17,6 +17,7 @@ This document describes the modernization of the Ant Colony Optimization project
 - Uses Clojure CLI tools with `deps.edn`
 - Clojure 1.12.0 (latest stable)
 - Quil 4.3.1563 (Processing wrapper for visualizations)
+- tools.cli 1.1.230 (Standard CLI argument parsing)
 - Modern test runner integration
 - JVM options configured to suppress warnings
 
@@ -244,5 +245,37 @@ Potential improvements for future versions:
 9. Export visualization as video/GIF
 
 ## Conclusion
+
+### 11. CLI Argument Parsing
+
+**Original:**
+- Custom manual argument parsing with loops
+- ~40 lines of imperative code
+- No built-in help
+- Manual error handling
+
+**Modern:**
+```clojure
+(def cli-options
+  [["-f" "--file PATH" "Path to TSM file"
+    :default "resources/bier127.tsm"]
+   ["-a" "--ants N" "Number of ants per generation"
+    :default 500
+    :parse-fn #(Integer/parseInt %)
+    :validate [pos? "Must be a positive number"]]
+   ["-g" "--generations N" "Number of generations to run"
+    :default 125
+    :parse-fn #(Integer/parseInt %)
+    :validate [pos? "Must be a positive number"]]
+   ["-h" "--help" "Show this help message"]])
+```
+
+Benefits:
+- Uses standard `tools.cli` library
+- Declarative option specification
+- Automatic help generation
+- Built-in validation
+- Better error messages
+- ~15 lines of code
 
 This modernization brings the codebase up to current Clojure best practices while maintaining the core algorithm's effectiveness. The code is now more maintainable, testable, and idiomatic.

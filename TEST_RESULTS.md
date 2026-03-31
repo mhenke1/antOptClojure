@@ -2,7 +2,7 @@
 
 ## Test Execution Summary
 
-**Date:** 2026-03-30  
+**Date:** 2026-03-31
 **Status:** ✅ ALL TESTS PASSING
 
 ## Unit Tests
@@ -10,9 +10,11 @@
 ```
 Running tests in #{"test"}
 
+Testing antopt.cli-test
 Testing antopt.core-test
+Testing antopt.ui-test
 
-Ran 16 tests containing 60 assertions.
+Ran 20 tests containing 90 assertions.
 0 failures, 0 errors.
 ```
 
@@ -20,67 +22,130 @@ Ran 16 tests containing 60 assertions.
 
 All core functionality has been tested:
 
-1. ✅ **Distance Calculations**
+1. ✅ **CLI Utilities (test/antopt/cli_test.clj)**
+   - `file-exists-test` - File existence validation
+   - `make-cli-options-test` - CLI option specification creation
+   - `cli-options-with-different-defaults-test` - Custom defaults
+
+2. ✅ **Distance Calculations (test/antopt/core_test.clj)**
    - `euclidean-distance-test` - Euclidean distance between points
    - `connection-distance-test` - Rounded distance for TSP
    - `tour-length-test` - Total tour length calculation
 
-2. ✅ **Connection Management**
+3. ✅ **Connection Management**
    - `init-connection-test` - Single connection initialization
    - `init-connections-test` - All connections initialization
    - `extract-distances-test` - Distance map extraction
 
-3. ✅ **Pheromone Operations**
+4. ✅ **Pheromone Operations**
    - `evaporate-connection-test` - Single connection evaporation
    - `evaporate-all-test` - All connections evaporation
    - `deposit-pheromone-test` - Single connection deposit
    - `deposit-tour-pheromone-test` - Tour pheromone deposit
 
-4. ✅ **Tour Construction**
+5. ✅ **Tour Construction**
    - `select-next-node-test` - Probabilistic node selection
    - `build-tour-test` - Complete tour construction
    - `walk-ant-test` - Ant walk with length calculation
 
-5. ✅ **Integration Tests**
+6. ✅ **Integration Tests**
    - `process-generation-test` - Full generation processing
    - `optimize-test` - Small instance optimization
    - `optimize-larger-instance-test` - Larger instance optimization
 
-## Integration Test
+7. ✅ **UI Helper Functions (test/antopt/ui_test.clj)**
+   - `scale-coordinates-test` - Coordinate scaling for display
 
-Successfully ran optimization on real TSP instance with Quil visualization:
+## Integration Tests
 
-**Dataset:** eil51.tsm (51 cities)
-**Configuration:** 300 ants, 100 generations
-**Result:** Tour length = 446
-**Performance:** Converged by generation 50
-**Quality:** Excellent (within expected range of 430-450)
-**UI:** Real-time visualization with Quil, no warnings
+### CLI Integration Test
 
-### Optimization Output
+Successfully ran optimization from command line:
 
+**Command:** `clojure -M -m antopt.core -f resources/eil51.tsm -a 50 -g 10`
+
+**Output:**
+```
+=== Ant Colony Optimization ===
+Dataset: resources/eil51.tsm
+Number of cities: 51
+Ants per generation: 50
+Number of generations: 10
+
+Generation 0: Best length = 9223372036854775807
+Generation 10: Best length = 630
+
+=== Optimization Complete ===
+Tour length: 630
+Tour path: [0 31 26 5 13 24 42 25 6 22 47 23 4 50 45 11 46 16 36 43 14 44 32 9 38 33 29 48 37 10 49 15 1 19 2 30 7 27 21 17 3 12 40 18 39 41 8 28 20 35 34 0]
+```
+
+**Help Flag Test:**
+```
+$ clojure -M -m antopt.core --help
+Ant Colony Optimization for TSP
+
+  -f, --file PATH      resources/bier127.tsm  Path to TSM file
+  -a, --ants N         500                    Number of ants per generation
+  -g, --generations N  125                    Number of generations to run
+  -h, --help                                  Show this help message
+```
+
+**Error Handling Test:**
+```
+$ clojure -M -m antopt.core -f nonexistent.tsm
+Error parsing arguments:
+  Failed to validate "-f nonexistent.tsm": File must exist
+
+  -f, --file PATH      resources/bier127.tsm  Path to TSM file
+  -a, --ants N         500                    Number of ants per generation
+  -g, --generations N  125                    Number of generations to run
+  -h, --help                                  Show this help message
+```
+
+### UI Integration Test
+
+Successfully ran optimization with Quil visualization:
+
+**Command:** `clojure -M -m antopt.ui -f resources/eil51.tsm -a 50 -g 10`
+
+**Output:**
 ```
 === Ant Colony Optimization - GUI (Quil) ===
 Dataset: resources/eil51.tsm
 Number of cities: 51
-Ants per generation: 300
-Number of generations: 100
+Ants per generation: 50
+Number of generations: 10
 
 Generation 0: Best length = 9223372036854775807
-Generation 10: Best length = 497
-Generation 20: Best length = 470
-Generation 30: Best length = 459
-Generation 40: Best length = 446
-Generation 50: Best length = 446
-Generation 60: Best length = 446
-Generation 70: Best length = 446
-Generation 80: Best length = 446
-Generation 90: Best length = 446
-Generation 100: Best length = 446
+Generation 10: Best length = 617
 
 === Optimization Complete ===
-Tour length: 446
-Tour path: [0 31 10 37 4 48 8 49 15 1 28 20 33 29 9 38 32 44 14 43 36 16 3 39 41 18 40 12 17 46 11 45 50 26 5 13 24 23 42 6 22 47 7 25 30 27 2 19 34 35 21 0]
+Tour length: 617
+Tour path: [0 31 26 47 7 25 30 27 2 19 34 35 1 8 48 29 38 9 32 44 14 43 18 40 12 11 28 20 36 41 39 16 3 17 46 50 45 10 15 49 33 37 4 5 23 13 24 22 6 42 21 0]
+```
+
+**Help Flag Test:**
+```
+$ clojure -M -m antopt.ui --help
+Ant Colony Optimization - GUI (Quil)
+
+  -f, --file PATH      resources/xqf131.tsm  Path to TSM file
+  -a, --ants N         500                   Number of ants per generation
+  -g, --generations N  125                   Number of generations to run
+  -h, --help                                 Show this help message
+```
+
+**Error Handling Test:**
+```
+$ clojure -M -m antopt.ui -f nonexistent.tsm
+Error parsing arguments:
+  Failed to validate "-f nonexistent.tsm": File must exist
+
+  -f, --file PATH      resources/xqf131.tsm  Path to TSM file
+  -a, --ants N         500                   Number of ants per generation
+  -g, --generations N  125                   Number of generations to run
+  -h, --help                                 Show this help message
 ```
 
 ## Code Quality Verification
@@ -130,11 +195,13 @@ The Quil-based visualization has been tested and verified:
 
 The modernized Ant Colony Optimization implementation:
 
-1. **Passes all tests** - 16 tests, 60 assertions, 0 failures
+1. **Passes all tests** - 20 tests, 90 assertions, 0 failures
 2. **Works correctly** - Produces valid TSP solutions
-3. **Maintains performance** - Comparable to original
-4. **Improves code quality** - Modern idiomatic Clojure
-5. **Better documented** - Comprehensive docs and tests
-6. **Modern visualization** - Quil-based real-time graphics
+3. **CLI integration verified** - Help, validation, and error handling work correctly
+4. **UI integration verified** - Quil visualization works with proper error handling
+5. **Maintains performance** - Comparable to original
+6. **Improves code quality** - Modern idiomatic Clojure with tools.cli
+7. **Better documented** - Comprehensive docs and tests
+8. **Shared CLI utilities** - DRY principle with antopt.cli namespace
 
 The rewrite is **production-ready** and ready for use! 🎉

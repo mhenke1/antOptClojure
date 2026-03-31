@@ -4,7 +4,9 @@
    This implementation uses pheromone trails and heuristic information
    to find near-optimal solutions to TSP instances."
   (:require [clojure.edn :as edn]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [clojure.tools.cli :refer [parse-opts]]
+            [antopt.cli :as cli]))
 
 ;; Algorithm parameters
 (def default-config
@@ -216,47 +218,11 @@
            (recur (inc gen) state connections)))))))
 
 ;; CLI entry point
-(defn parse-int
-  "Parse string to integer, return nil if invalid."
-  [s]
-  (try
-    (Integer/parseInt s)
-    (catch Exception _ nil)))
-
-(defn parse-args
-  "Parse command line arguments into a map.
-   Supports both named parameters and positional filepath."
-  [args]
-  (loop [remaining args
-         result {:filepath nil
-                 :num-ants nil
-                 :num-generations nil}]
-    (if (empty? remaining)
-      result
-      (let [arg (first remaining)]
-        (cond
-          ;; Named parameters
-          (or (= arg "-a") (= arg "--ants"))
-          (recur (drop 2 remaining)
-                 (assoc result :num-ants (parse-int (second remaining))))
-          
-          (or (= arg "-g") (= arg "--generations"))
-          (recur (drop 2 remaining)
-                 (assoc result :num-generations (parse-int (second remaining))))
-          
-          (or (= arg "-f") (= arg "--file"))
-          (recur (drop 2 remaining)
-                 (assoc result :filepath (second remaining)))
-          
-          ;; Filepath (first non-flag argument, for backward compatibility)
-          (and (not (.startsWith arg "-"))
-               (nil? (:filepath result)))
-          (recur (rest remaining)
-                 (assoc result :filepath arg))
-          
-          ;; Skip unknown flags
-          :else
-          (recur (rest remaining) result))))))
+(def cli-options
+  "Command line options specification for tools.cli."
+  (cli/make-cli-options "resources/bier127.tsm"
+                        (:num-ants default-config)
+                        (:num-generations default-config)))
 
 (defn -main
   "Run optimization from command line.
@@ -268,32 +234,59 @@
      -f, --file PATH        Path to TSM file (default: resources/bier127.tsm)
      -a, --ants N           Number of ants per generation (default: 500)
      -g, --generations N    Number of generations to run (default: 125)
+     -h, --help             Show help message
    
    Examples:
      clojure -M -m antopt.core
      clojure -M -m antopt.core -f resources/eil51.tsm
      clojure -M -m antopt.core --file resources/eil51.tsm -a 300 -g 100
      clojure -M -m antopt.core --ants 200 --generations 50
-     clojure -M -m antopt.core -f resources/eil51.tsm -a 300
-     
-   Note: Positional filepath (without -f) still supported for backward compatibility"
+     clojure -M -m antopt.core -f resources/eil51.tsm -a 300"
   [& args]
-  (let [parsed (parse-args args)
-        filepath (or (:filepath parsed) "resources/bier127.tsm")
-        num-ants (or (:num-ants parsed) (:num-ants default-config))
-        num-generations (or (:num-generations parsed) (:num-generations default-config))
-        config (assoc default-config
-                     :num-ants num-ants
-                     :num-generations num-generations)
-        nodes (read-tsm-file filepath)]
-    (println "=== Ant Colony Optimization ===")
-    (println "Dataset:" filepath)
-    (println "Number of cities:" (count nodes))
-    (println "Ants per generation:" num-ants)
-    (println "Number of generations:" num-generations)
-    (println)
-    (let [result (optimize nodes config)]
-      (println "\n=== Optimization Complete ===")
-      (println "Tour length:" (:length result))
-      (println "Tour path:" (:path result))
-      (shutdown-agents))))
+  (let [{:keys [options arguments errors summary]} (parse-opts args cli-options)]
+    (cond
+      ;; Show help
+      (:help options)
+      (do
+        (println "Ant Colony Optimization for TSP")
+        (println)
+        (println summary)
+        (System/exit 0))
+      
+      ;; Handle errors
+      errors
+      (do
+        (println "Error parsing arguments:")
+        (doseq [error errors]
+          (println " " error))
+        (println)
+        (println summary)
+        (System/exit 1))
+      
+      ;; Run optimization
+      :else
+      (let [filepath (:file options)
+            num-ants (:ants options)
+            num-generations (:generations options)
+            config (assoc default-config
+                         :num-ants num-ants
+                         :num-generations num-generations)]
+        (try
+          (let [nodes (read-tsm-file filepath)]
+            (println "=== Ant Colony Optimization ===")
+            (println "Dataset:" filepath)
+            (println "Number of cities:" (count nodes))
+            (println "Ants per generation:" num-ants)
+            (println "Number of generations:" num-generations)
+            (println)
+            (let [result (optimize nodes config)]
+              (println "\n=== Optimization Complete ===")
+              (println "Tour length:" (:length result))
+              (println "Tour path:" (:path result))
+              (shutdown-agents)))
+          (catch java.io.FileNotFoundException e
+            (println (str "Error: File not found: " filepath))
+            (System/exit 1))
+          (catch Exception e
+            (println (str "Error reading file: " (.getMessage e)))
+            (System/exit 1)))))))

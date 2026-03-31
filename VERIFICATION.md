@@ -27,6 +27,14 @@ This document provides a verification checklist for the modernized Ant Colony Op
 - [x] Threading macros for clarity
 - [x] No global mutable state
 
+### CLI Utilities (src/antopt/cli.clj)
+
+- [x] Namespace documentation
+- [x] Shared CLI option creation
+- [x] File existence validation
+- [x] DRY principle - no code duplication
+- [x] Reusable across core and ui modules
+
 ### UI Module (src/antopt/ui.clj)
 
 - [x] Namespace documentation
@@ -40,8 +48,11 @@ This document provides a verification checklist for the modernized Ant Colony Op
 - [x] Semi-transparent info panel at bottom
 - [x] JVM options configured to suppress warnings
 
-### Tests (test/antopt/core_test.clj)
+### Tests
 
+- [x] **test/antopt/cli_test.clj** - CLI utilities tests
+- [x] **test/antopt/core_test.clj** - Core algorithm tests
+- [x] **test/antopt/ui_test.clj** - UI helper tests
 - [x] Comprehensive test coverage
 - [x] Testing blocks with descriptions
 - [x] Unit tests for all core functions
@@ -79,6 +90,7 @@ This document provides a verification checklist for the modernized Ant Colony Op
 ## ✅ Dependencies
 
 - [x] Latest stable Clojure (1.12.0)
+- [x] tools.cli 1.1.230 (Standard CLI argument parsing)
 - [x] Quil 4.3.1563 (Processing wrapper for visualizations)
 - [x] Test runner configuration
 - [x] JVM options configured for native access

@@ -47,6 +47,9 @@ clj -P
 Run optimization without GUI:
 
 ```bash
+# Show help
+clj -M -m antopt.core --help
+
 # Use default dataset and parameters (500 ants, 125 generations)
 clj -M -m antopt.core
 
@@ -61,21 +64,22 @@ clj -M -m antopt.core --file resources/eil51.tsm --ants 200 --generations 50
 
 # Mix flags (order doesn't matter)
 clj -M -m antopt.core -a 300 -f resources/eil51.tsm -g 100
-
-# Backward compatible: positional filepath still works
-clj -M -m antopt.core resources/eil51.tsm -a 300
 ```
 
 **Options:**
 - `-f, --file PATH` - Path to TSM file (default: `resources/bier127.tsm`)
 - `-a, --ants N` - Number of ants per generation (default: `500`)
 - `-g, --generations N` - Number of generations to run (default: `125`)
+- `-h, --help` - Show help message
 
 ### Graphical User Interface
 
 Run with real-time visualization:
 
 ```bash
+# Show help
+clj -M:run --help
+
 # Use default dataset and parameters (xqf131.tsm, 500 ants, 125 generations)
 clj -M:run
 
@@ -90,15 +94,13 @@ clj -M:run --file resources/belgiumtour.tsm --ants 200 --generations 50
 
 # Mix flags (order doesn't matter)
 clj -M:run -a 300 -f resources/eil51.tsm -g 100
-
-# Backward compatible: positional filepath still works
-clj -M:run resources/belgiumtour.tsm -a 300
 ```
 
 **Options:**
 - `-f, --file PATH` - Path to TSM file (default: `resources/xqf131.tsm`)
 - `-a, --ants N` - Number of ants per generation (default: `500`)
 - `-g, --generations N` - Number of generations to run (default: `125`)
+- `-h, --help` - Show help message
 
 ### REPL Usage
 
@@ -144,11 +146,14 @@ antOptClosureNew/
 ├── README.md             # This file
 ├── src/
 │   └── antopt/
+│       ├── cli.clj       # Shared CLI utilities
 │       ├── core.clj      # Core ACO algorithm
 │       └── ui.clj        # GUI visualization
 ├── test/
 │   └── antopt/
-│       └── core_test.clj # Test suite
+│       ├── cli_test.clj  # CLI utilities tests
+│       ├── core_test.clj # Core algorithm tests
+│       └── ui_test.clj   # UI helper tests
 └── resources/
     ├── belgiumtour.tsm   # Belgium tour dataset
     ├── bier127.tsm       # 127-city dataset
