@@ -19,7 +19,7 @@ This project implements the Ant Colony Optimization metaheuristic to find near-o
 - **alpha (α)**: Pheromone importance factor (default: 1.0)
 - **beta (β)**: Distance importance factor (default: 2.0)
 - **rho (ρ)**: Pheromone evaporation rate (default: 0.25)
-- **num-ants**: Number of ants per generation (default: 500)
+- **num-ants**: Number of ants per generation (default: 30)
 - **num-generations**: Number of iterations (default: 125)
 
 ## Installation
@@ -50,7 +50,7 @@ Run optimization without GUI:
 # Show help
 clj -M -m antopt.core --help
 
-# Use default dataset and parameters (500 ants, 125 generations)
+# Use default dataset and parameters (30 ants, 125 generations)
 clj -M -m antopt.core
 
 # Specify dataset with named parameter
@@ -68,7 +68,7 @@ clj -M -m antopt.core -a 300 -f resources/eil51.tsm -g 100
 
 **Options:**
 - `-f, --file PATH` - Path to TSM file (default: `resources/bier127.tsm`)
-- `-a, --ants N` - Number of ants per generation (default: `500`)
+- `-a, --ants N` - Number of ants per generation (default: `30`)
 - `-g, --generations N` - Number of generations to run (default: `125`)
 - `-h, --help` - Show help message
 
@@ -80,7 +80,7 @@ Run with real-time visualization:
 # Show help
 clj -M:run --help
 
-# Use default dataset and parameters (xqf131.tsm, 500 ants, 125 generations)
+# Use default dataset and parameters (xqf131.tsm, 30 ants, 125 generations)
 clj -M:run
 
 # Specify dataset with named parameter
@@ -98,7 +98,7 @@ clj -M:run -a 300 -f resources/eil51.tsm -g 100
 
 **Options:**
 - `-f, --file PATH` - Path to TSM file (default: `resources/xqf131.tsm`)
-- `-a, --ants N` - Number of ants per generation (default: `500`)
+- `-a, --ants N` - Number of ants per generation (default: `30`)
 - `-g, --generations N` - Number of generations to run (default: `125`)
 - `-h, --help` - Show help message
 

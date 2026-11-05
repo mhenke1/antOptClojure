@@ -142,7 +142,7 @@
    
    Options:
      -f, --file PATH        Path to TSM file (default: resources/xqf131.tsm)
-     -a, --ants N           Number of ants per generation (default: 500)
+     -a, --ants N           Number of ants per generation (default: 30)
      -g, --generations N    Number of generations to run (default: 125)
      -h, --help             Show help message
    
