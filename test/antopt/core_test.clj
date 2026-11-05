@@ -130,6 +130,23 @@
       (is (contains? (set tour) 1))
       (is (contains? (set tour) 2)))))
 
+(deftest two-opt-test
+  (let [square [[0 0] [0 10] [10 10] [10 0]]
+        distances (aco/extract-distances (aco/init-connections square test-config))]
+    (testing "uncrosses a self-crossing tour"
+      (let [crossed [0 2 1 3 0]
+            fixed (aco/two-opt distances crossed)]
+        (is (= 40 (aco/tour-length distances fixed)))
+        (is (= 0 (first fixed) (last fixed)))
+        (is (= #{0 1 2 3} (set fixed)))))
+    (testing "leaves an optimal tour unchanged"
+      (is (= [0 1 2 3 0] (aco/two-opt distances [0 1 2 3 0]))))
+    (testing "never makes a tour longer"
+      (let [d (aco/extract-distances (aco/init-connections test-nodes test-config))
+            tour (conj (vec (range (count test-nodes))) 0)]
+        (is (<= (aco/tour-length d (aco/two-opt d tour))
+                (aco/tour-length d tour)))))))
+
 (deftest walk-ant-test
   (testing "Ant walk with tour length calculation"
     (let [connections (aco/init-connections simple-nodes test-config)

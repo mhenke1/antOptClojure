@@ -14,7 +14,7 @@
   {:alpha 1.0              ; Pheromone importance
    :beta 2.0               ; Distance importance
    :rho 0.25               ; Evaporation rate
-   :num-ants 500           ; Ants per generation
+   :num-ants 30            ; Ants per generation
    :num-generations 125})  ; Number of iterations
 
 ;; Connection information record
@@ -160,10 +160,31 @@
         (recur (conj tour next-node)
                (filterv #(not= % next-node) remaining))))))
 
+;; Local search
+(defn two-opt
+  "Improve a closed tour (first = last node) with 2-opt: whenever replacing two
+   edges (a,b) and (c,d) with (a,c) and (b,d) makes the tour shorter, reverse
+   the part of the path between them. Repeats until no such move is left."
+  [distances path]
+  (let [n (count path)
+        d (fn [a b] (distances [a b]))
+        try-move (fn [p [i j]]
+                   (let [a (p (dec i)) b (p i) c (p j) e (p (inc j))]
+                     (if (< (+ (d a c) (d b e)) (+ (d a b) (d c e)))
+                       (into (subvec p 0 i)
+                             (concat (rseq (subvec p i (inc j))) (subvec p (inc j))))
+                       p)))
+        pairs (for [i (range 1 (- n 2))
+                    j (range (inc i) (dec n))]
+                [i j])]
+    (loop [p (vec path)]
+      (let [better (reduce try-move p pairs)]
+        (if (= better p) p (recur better))))))
+
 (defn walk-ant
-  "Create a tour for one ant and calculate its length."
+  "Create a tour for one ant, improve it with 2-opt and calculate its length."
   [distances connections num-nodes]
-  (let [path (build-tour connections num-nodes)
+  (let [path (two-opt distances (build-tour connections num-nodes))
         length (memoized-tour-length distances path)]
     {:length length :path path}))
 
@@ -232,7 +253,7 @@
    
    Options:
      -f, --file PATH        Path to TSM file (default: resources/bier127.tsm)
-     -a, --ants N           Number of ants per generation (default: 500)
+     -a, --ants N           Number of ants per generation (default: 30)
      -g, --generations N    Number of generations to run (default: 125)
      -h, --help             Show help message
    
